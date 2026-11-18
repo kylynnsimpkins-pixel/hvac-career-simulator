@@ -1,7 +1,8 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
-import { HOMEWORK, LESSON_PLANS, classroomLines } from "@/game/data/dialogue";
+import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
+import { QuizBox } from "./QuizBox";
 import { addVignette, hudBar } from "./fx";
 
 const FONT = "monospace";
@@ -15,6 +16,7 @@ export class ClassroomScene extends Phaser.Scene {
   private shadow!: Phaser.GameObjects.Ellipse;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private dialogue!: DialogueBox;
+  private quiz!: QuizBox;
   private toast!: Phaser.GameObjects.Text;
   private marker!: Phaser.GameObjects.Text;
   private target: Phaser.Math.Vector2 | null = null;
@@ -76,6 +78,7 @@ export class ClassroomScene extends Phaser.Scene {
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);
+    this.quiz = new QuizBox(this);
     this.toast = this.add
       .text(320, 350, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
       .setOrigin(0.5)
@@ -86,6 +89,7 @@ export class ClassroomScene extends Phaser.Scene {
     this.input.keyboard!.on("keydown-SPACE", () => this.dialogue.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.dialogue.advance());
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
+      if (this.quiz.active) return;
       if (this.dialogue.active) this.dialogue.advance();
       else this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
@@ -95,7 +99,7 @@ export class ClassroomScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0);
 
-    if (this.dialogue.active) {
+    if (this.dialogue.active || this.quiz.active) {
       this.target = null;
       this.player.setTexture("player-0");
       return;
@@ -137,14 +141,23 @@ export class ClassroomScene extends Phaser.Scene {
     this.lessonDone = true;
     const { playerName, lessonDay } = store.active;
     this.dialogue.start(classroomLines(playerName, lessonDay), () => {
-      const s = useGameStore.getState();
-      s.reward(LESSON_REWARD);
-      s.patch({ lessonDay: lessonDay + 1 });
-      this.marker.setVisible(false);
-      this.showToast("Class complete: +25 XP, +25 Graduation");
+      const quiz = lessonContent(lessonDay).quiz;
+      this.quiz.start(quiz, (correct) => {
+        const reward = quizReward(correct);
+        const s = useGameStore.getState();
+        s.reward(reward);
+        s.patch({ lessonDay: lessonDay + 1 });
+        this.marker.setVisible(false);
+        this.dialogue.start(
+          [
+            { speaker: "Mr. Rivera", text: `You got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
+            { speaker: "Mr. Rivera", text: `Today you earn +${reward.xp} XP and +${reward.graduationPoints} Graduation points.` },
+          ],
+          () => this.showToast(`Class complete: +${reward.xp} XP, +${reward.graduationPoints} Graduation`),
+        );
+      });
     });
   }
-
   private showToast(text: string) {
     this.toast.setText(text).setVisible(true);
     this.time.delayedCall(2600, () => this.toast.setVisible(false));
@@ -227,7 +240,7 @@ export class ClassroomScene extends Phaser.Scene {
       ...hw.map((h) => `* ${h}`),
     ].join("\n");
     this.add
-      .text(174, 30, board, { fontFamily: FONT, fontSize: "9px", color: "#f0f5ea", lineSpacing: 1, wordWrap: { width: 292 } })
+      .text(174, 38, board, { fontFamily: FONT, fontSize: "9px", color: "#f0f5ea", lineSpacing: 1, wordWrap: { width: 292 } })
       .setDepth(5);
   }
 
