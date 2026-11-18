@@ -49,6 +49,9 @@ export interface Look {
 export function drawPerson(ctx: Ctx, look: Look, frame: number) {
   const stride = frame === 0 ? 0 : 1;
   const skin = css(look.skin);
+  const hairStyle = look.hairStyle ?? (look.dreads ? "dreads" : look.hair !== undefined ? "crop" : "bald");
+  const hatOn = look.hatStyle !== undefined && look.hatStyle !== "none";
+  if (look.hair !== undefined && hairStyle !== "bald") drawHair(ctx, hairStyle, look.hair, hatOn, "back");
   // Legs, alternating stride.
   [[10, stride ? 0 : 2], [18, stride ? 2 : 0]].forEach(([x, lift]) => {
     rr(ctx, x, 33, 6, 12 - lift, 2);
@@ -68,11 +71,11 @@ export function drawPerson(ctx: Ctx, look: Look, frame: number) {
   // Torso with soft shading.
   if (look.female) {
     ctx.beginPath();
-    ctx.moveTo(9, 20);
-    ctx.lineTo(23, 20);
-    ctx.quadraticCurveTo(21, 28, 24.5, 36);
+    ctx.moveTo(8.5, 20);
+    ctx.lineTo(23.5, 20);
+    ctx.quadraticCurveTo(21.5, 28, 24.5, 36);
     ctx.lineTo(7.5, 36);
-    ctx.quadraticCurveTo(11, 28, 9, 20);
+    ctx.quadraticCurveTo(10.5, 28, 8.5, 20);
     ctx.closePath();
   } else rr(ctx, 7, 20, 18, 16, 4);
   fillShape(ctx, grad(ctx, 7, 0, 25, 0, mix(look.shirt, 12), mix(look.shirt, -28)));
@@ -151,13 +154,12 @@ export function drawPerson(ctx: Ctx, look: Look, frame: number) {
     ctx.stroke();
   }
   // Hair and headwear.
-  const style = look.hairStyle ?? (look.dreads ? "dreads" : look.hair !== undefined ? "crop" : "bald");
-  if (look.hair !== undefined && style !== "bald") drawHair(ctx, style, look.hair, look.hatStyle !== undefined && look.hatStyle !== "none");
+  if (look.hair !== undefined && hairStyle !== "bald") drawHair(ctx, hairStyle, look.hair, hatOn, "front");
   const hatStyle = look.hatStyle ?? (look.hat !== undefined ? "hardhat" : "none");
   if (look.hat !== undefined && hatStyle !== "none") drawHat(ctx, hatStyle, look.hat);
 }
 
-function hairCap(ctx: Ctx, color: number, top = 7.5) {
+function hairCapShape(ctx: Ctx, color: number, top = 7.5) {
   ctx.beginPath();
   ctx.arc(16, 9.5, 8.7, Math.PI * 1.02, Math.PI * 1.98);
   ctx.lineTo(24.4, 12);
@@ -168,8 +170,18 @@ function hairCap(ctx: Ctx, color: number, top = 7.5) {
   fillShape(ctx, grad(ctx, 0, 2, 0, 12, mix(color, 15), css(color)));
 }
 
-function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
+const BACK_STYLES = ["long", "ponytail", "bob", "pigtails", "braid", "dreads", "afro"];
+
+/** "back" draws hair that hangs behind the head and body; "front" draws the scalp and fringe. */
+function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean, part: "back" | "front") {
+  const back = part === "back";
+  if (hatOn && (style === "afro" || style === "curly" || style === "mohawk" || style === "bun")) style = "crop";
+  if (back && !BACK_STYLES.includes(style)) return;
+  const hairCap = (top = 7.5) => {
+    if (!back) hairCapShape(ctx, color, top);
+  };
   const strand = (x0: number, y0: number, x1: number, y1: number, w = 1.7, i = 0) => {
+    if (!back) return;
     ctx.lineCap = "round";
     ctx.strokeStyle = i % 2 ? css(color) : mix(color, 14);
     ctx.lineWidth = w;
@@ -179,11 +191,12 @@ function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
     ctx.stroke();
   };
   const blob = (cx: number, cy: number, r: number) => {
+    if ((style === "afro") !== back) return;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     fillShape(ctx, grad(ctx, 0, cy - r, 0, cy + r, mix(color, 15), css(color)));
   };
-  if (hatOn && (style === "afro" || style === "curly" || style === "mohawk")) style = "crop";
+  if (!back) ctx.lineCap = "round";
   switch (style) {
     case "buzz":
       ctx.beginPath();
@@ -194,7 +207,7 @@ function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
       fillShape(ctx, css(color));
       break;
     case "side":
-      hairCap(ctx, color, 6);
+      hairCap(6);
       ctx.beginPath();
       ctx.moveTo(8, 8);
       ctx.quadraticCurveTo(16, 2, 24.4, 8);
@@ -204,17 +217,17 @@ function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
       fillShape(ctx, css(color));
       break;
     case "curly":
-      [[9, 6], [13, 3.5], [18, 3], [23, 6], [11, 7.5], [21, 7.5], [16, 6]].forEach(([x, y]) => blob(x, y, 3.6));
+      [[9, 5.5], [13, 3], [18, 2.5], [23, 5.5], [11, 6], [21, 6], [16, 5]].forEach(([x, y]) => blob(x, y, 3.6));
       break;
     case "afro":
       blob(16, 7, 11);
       break;
     case "long":
-      hairCap(ctx, color);
+      hairCap();
       [[7.4, 22], [24.6, 22]].forEach(([x, h], i) => strand(x, 8, x, h, 3.2, i));
       break;
     case "ponytail":
-      hairCap(ctx, color);
+      hairCap();
       strand(24, 8, 28, 22, 3.4);
       break;
     case "mohawk":
@@ -227,53 +240,52 @@ function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
       fillShape(ctx, css(color));
       break;
     case "bob":
-      hairCap(ctx, color);
+      hairCap();
       [[7.2, 18], [24.8, 18]].forEach(([x, h], i) => strand(x, 8, x, h, 3.6, i));
       strand(8, 18, 24, 18, 1, 0);
       break;
     case "pigtails":
-      hairCap(ctx, color);
+      hairCap();
       [[6.5, 23], [25.5, 23]].forEach(([x, h], i) => strand(x, 9, x + (i ? 2 : -2), h, 3.8, i));
       break;
     case "bun":
-      hairCap(ctx, color);
-      blob(16, 1.8, 3.8);
+      hairCap();
+      blob(16, 3, 3.2);
       break;
     case "braid":
-      hairCap(ctx, color);
+      hairCap();
       strand(23.5, 9, 25.5, 17, 3, 0);
       strand(25.5, 17, 24.5, 26, 2.6, 1);
       break;
     case "pixie":
-      hairCap(ctx, color, 6);
+      hairCap(6);
       ctx.beginPath();
       ctx.moveTo(8, 9);
       ctx.quadraticCurveTo(12, 3, 24, 8);
-      ctx.lineTo(24, 11);
+      ctx.lineTo(24, 10);
       ctx.lineTo(19, 8);
       ctx.closePath();
       fillShape(ctx, css(color));
       break;
     case "sidesweep":
-      hairCap(ctx, color, 6);
+      hairCap(6);
       ctx.beginPath();
-      ctx.moveTo(8, 12);
+      ctx.moveTo(8, 11);
       ctx.quadraticCurveTo(10, 3, 22, 4);
-      ctx.quadraticCurveTo(14, 7, 12, 13);
+      ctx.quadraticCurveTo(14, 6, 11, 10);
       ctx.closePath();
       fillShape(ctx, css(color));
       strand(7.4, 9, 7.4, 20, 3, 1);
       break;
     case "dreads":
-      hairCap(ctx, color);
+      hairCap();
       for (let i = 0; i < 9; i++) {
-        const x = 8.6 + i * 1.85;
-        const len = i < 2 || i > 6 ? 15 : 8;
-        strand(x, 5, x + (i < 4 ? -1.2 : i > 4 ? 1.2 : 0), 5 + len, 1.7, i);
+        const x = 6.8 + i * 2.2;
+        strand(x, 6, x + (i < 4 ? -1.2 : i > 4 ? 1.2 : 0), i < 2 || i > 6 ? 24 : 18, 2, i);
       }
       break;
     default:
-      hairCap(ctx, color);
+      hairCap();
   }
 }
 
