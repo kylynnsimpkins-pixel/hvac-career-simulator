@@ -1,5 +1,8 @@
 [
   { "id": "p1", "category": "placement", "prompt": "Ohm's law is:", "choices": ["V = I x R", "P = V / R", "I = V x R"], "answerIndex": 0, "xp": 10 },
   { "id": "p2", "category": "placement", "prompt": "A capacitor stores:", "choices": ["Charge", "Refrigerant", "Heat"], "answerIndex": 0, "xp": 10 },
-  { "id": "p3", "category": "placement", "prompt": "Which unit measures cooling capacity?", "choices": ["Volts", "BTU/hr", "Ohms"], "answerIndex": 1, "xp": 10 }
+  { "id": "p3", "category": "placement", "prompt": "Which unit measures cooling capacity?", "choices": ["Volts", "BTU/hr", "Ohms"], "answerIndex": 1, "xp": 10 },
+  { "id": "p4", "category": "placement", "prompt": "Which component compresses refrigerant vapor?", "choices": ["Evaporator", "Compressor", "Metering device"], "answerIndex": 1, "xp": 10 },
+  { "id": "p5", "category": "placement", "prompt": "Before working on a circuit you should:", "choices": ["Lock out and tag out power", "Bypass the breaker", "Wet your hands"], "answerIndex": 0, "xp": 10 },
+  { "id": "p6", "category": "placement", "prompt": "A contactor is used to:", "choices": ["Store charge", "Switch high-current loads", "Measure airflow"], "answerIndex": 1, "xp": 10 }
 ]

@@ -12,6 +12,7 @@ export interface SaveProfile extends Skills {
 
   level: string;
   careerPath?: string;
+  placementScore?: number;
 
   completedLabs: string[];
   graduated: boolean;

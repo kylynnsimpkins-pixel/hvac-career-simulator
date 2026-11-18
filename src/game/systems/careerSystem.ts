@@ -5,6 +5,8 @@ export type CareerPathName = "Residential" | "Commercial";
 export interface CareerInfo {
   id: CareerPathName;
   employers: string[];
+  salary: string;
+  roles: string[];
   skills: (keyof SaveProfile)[];
 }
 
@@ -12,11 +14,15 @@ export const CAREERS: CareerInfo[] = [
   {
     id: "Commercial",
     employers: ["Carrier", "Trane", "Johnson Controls", "Daikin", "EMCOR"],
+    salary: "$55k - $95k",
+    roles: ["Commercial Service Tech", "Controls Technician", "Chiller Specialist"],
     skills: ["electrical", "mechanical", "diagnostics"],
   },
   {
     id: "Residential",
     employers: ["One Hour Heating & Air", "Aire Serv", "ARS Rescue Rooter"],
+    salary: "$45k - $80k",
+    roles: ["Residential Install Tech", "Service Technician", "Comfort Advisor"],
     skills: ["customerService", "sales", "leadership"],
   },
 ];

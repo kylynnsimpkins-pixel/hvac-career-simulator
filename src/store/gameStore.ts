@@ -37,6 +37,7 @@ interface GameState {
   completeLab: (labId: string, r: Reward) => void;
   earnCertification: (id: CertificationId) => boolean;
   chooseCareer: (path: string) => void;
+  submitPlacement: (score: number, xp: number) => void;
 }
 
 let flashTimer: ReturnType<typeof setTimeout> | undefined;
@@ -155,6 +156,12 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!a || !canEarn(a, id)) return false;
       commit({ ...a, certifications: addCertification(a, id) });
       return true;
+    },
+
+    submitPlacement: (score, xp) => {
+      const a = get().active;
+      if (!a || !a.graduated || a.placementScore !== undefined) return;
+      commit({ ...a, xp: a.xp + xp, placementScore: score });
     },
 
     chooseCareer: (path) => {
