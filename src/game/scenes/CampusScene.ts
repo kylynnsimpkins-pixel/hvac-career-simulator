@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { useGameStore, type Reward } from "@/store/gameStore";
-import { BRIEFINGS, INTRO, type DialogueLine } from "@/game/data/dialogue";
+import { INTRO, type DialogueLine } from "@/game/data/dialogue";
+import { addVignette, dropShadow, hudBar } from "./fx";
 
 interface Building {
   label: string;
@@ -57,6 +58,7 @@ export class CampusScene extends Phaser.Scene {
 
     const walls = this.physics.add.staticGroup();
     BUILDINGS.forEach((b) => {
+      dropShadow(this, b.x + 6, b.y + 52, 140, 22, b.y + 30);
       const img = this.add.image(b.x, b.y, `bld-${b.label}`).setDepth(b.y + 48);
       // Solid body covers the building but leaves the door row walkable.
       const wall = this.add.zone(b.x, b.y - 8, 124, 76);
@@ -72,7 +74,10 @@ export class CampusScene extends Phaser.Scene {
       img.setData("b", b.label);
     });
 
-    TREES.forEach(([x, y]) => this.add.image(x, y, "tree").setDepth(y + 16));
+    TREES.forEach(([x, y]) => {
+      dropShadow(this, x, y + 16, 30, 10, y + 10);
+      this.add.image(x, y, "tree").setDepth(y + 16);
+    });
 
     const color = useGameStore.getState().active?.avatarColor ?? "#38bdf8";
     this.makePlayerTextures(Phaser.Display.Color.HexStringToColor(color).color);
@@ -85,7 +90,8 @@ export class CampusScene extends Phaser.Scene {
     body.setSize(14, 10).setOffset(1, 22);
     this.physics.add.collider(this.player, walls);
 
-    this.drawHud();
+    hudBar(this, "HVAC Tech Academy  -  arrows / tap to walk, step on the ▼ doors");
+    addVignette(this);
     this.toast = this.add
       .text(320, 440, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
       .setOrigin(0.5)
@@ -168,15 +174,7 @@ export class CampusScene extends Phaser.Scene {
       this.scene.start("ClassroomScene");
       return;
     }
-    const finish = () => {
-      if (b.labId) store.completeLab(b.labId, b.reward);
-      else store.reward(b.reward);
-      this.cooldown.set(b.label, this.time.now + 3000);
-      this.showToast(`${b.label}: ${b.message}`);
-    };
-    const lines = BRIEFINGS[b.label];
-    if (lines) this.startDialogue(lines, finish);
-    else finish();
+    this.scene.start("LabScene", { building: b.label });
   }
 
   private buildDialogueBox() {

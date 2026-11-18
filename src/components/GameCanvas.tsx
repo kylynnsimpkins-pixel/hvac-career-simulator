@@ -13,6 +13,7 @@ export default function GameCanvas() {
       const Phaser = await import("phaser");
       const { CampusScene } = await import("@/game/scenes/CampusScene");
       const { ClassroomScene } = await import("@/game/scenes/ClassroomScene");
+      const { LabScene } = await import("@/game/scenes/LabScene");
       if (cancelled || !ref.current) return;
       game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -22,7 +23,7 @@ export default function GameCanvas() {
         height: 480,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-        scene: [CampusScene, ClassroomScene],
+        scene: [CampusScene, ClassroomScene, LabScene],
       });
     })();
 

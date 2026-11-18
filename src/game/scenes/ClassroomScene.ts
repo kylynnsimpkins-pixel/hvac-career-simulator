@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
 import { HOMEWORK, LESSON_PLANS, classroomLines } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
+import { addVignette, hudBar } from "./fx";
 
 const FONT = "monospace";
 const SPEED = 170;
@@ -65,10 +66,8 @@ export class ClassroomScene extends Phaser.Scene {
     );
 
     this.makePlayer();
-    this.add.rectangle(320, 12, 640, 24, 0x000000, 0.55).setDepth(9500);
-    this.add
-      .text(8, 5, "Classroom 101  -  talk to Mr. Rivera at the front, exit by the bottom door", { fontFamily: FONT, fontSize: "11px", color: "#ffffff" })
-      .setDepth(9501);
+    hudBar(this, "Classroom 101  -  talk to Mr. Rivera at the front, exit by the bottom door");
+    addVignette(this);
 
     this.shadow = this.add.ellipse(320, 440, 18, 7, 0x000000, 0.35);
     this.player = this.physics.add.sprite(320, 440, "player-0").setOrigin(0.5, 1);
