@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
 import { consumedParts, labGreeting, missingItemLines, redirectLines, REQUIRED_ITEMS, focusFor, planFor, stationKey, INSTRUCTOR } from "@/game/data/labGames";
-import { LAB_LAYOUTS, type LabLayout, type Station } from "@/game/data/labLayouts";
+import { LAB_LAYOUTS, type LabLayout, type Station, type StationKind } from "@/game/data/labLayouts";
 import { BUILDINGS } from "./CampusScene";
 import { DialogueBox } from "./DialogueBox";
 import { SCENARIOS } from "@/game/data/scenarios";
@@ -193,7 +193,15 @@ export class LabScene extends Phaser.Scene {
     const make = SCENARIOS[s.kind];
     if (!make) return;
     const belt = useGameStore.getState().active?.checkedOut ?? [];
-    this.mini.start(make(), belt, (m) => this.completeStation(s, lesson, Math.max(1, 3 - m)));
+    const others = (Object.keys(SCENARIOS) as StationKind[]).filter((k) => k !== s.kind && (REQUIRED_ITEMS[k] ?? []).every((i) => belt.includes(i)));
+    const second = SCENARIOS[others[Math.floor(Math.random() * others.length)] ?? s.kind] ?? make;
+    // Each station is two back-to-back cases: the lesson's own fault, then a follow-up case using the same belt.
+    this.mini.start(make(), belt, (m1) => {
+      this.say("Good work. Now a second case on the same equipment line. Keep your tools handy.");
+      this.time.delayedCall(1800, () =>
+        this.mini.start(second(), belt, (m2) => this.completeStation(s, lesson, Math.max(1, 3 - Math.ceil((m1 + m2) / 2)))),
+      );
+    });
   }
 
   private completeStation(s: Station, lesson: number, stars: number) {
