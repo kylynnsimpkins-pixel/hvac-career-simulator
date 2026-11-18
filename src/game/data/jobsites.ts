@@ -296,3 +296,32 @@ export const FOLLOWUPS: QuizQuestion[] = [
 
 export const followUpFor = (site: Site, round: number): QuizQuestion =>
   round <= 1 ? site.question : FOLLOWUPS[(SITES.indexOf(site) * 2 + round) % FOLLOWUPS.length];
+
+export interface Address {
+  street: string;
+  customer: string;
+  note: string;
+}
+
+/** What the work order says; the buildings on the town map only show their street address. */
+export const ADDRESSES: Record<string, Address> = {
+  ranch: { street: "412 Maple Lane", customer: "Ms. Patel", note: "One-story home, attic unit" },
+  twostory: { street: "1208 Oak Street", customer: "The Johnson family", note: "Two-story home, bedroom hall" },
+  grocery: { street: "88 Market Avenue", customer: "Fresh Mart manager", note: "Grocery store, rooftop unit" },
+  school: { street: "300 Learning Way", customer: "Principal Davis", note: "School, classroom wing" },
+  restaurant: { street: "52 Main Street", customer: "Rosa, owner", note: "Restaurant, kitchen rooftop unit" },
+};
+
+/** The site dispatch sends the tech to next: the unfinished site with the fewest calls done. */
+export function assignedSite(done: string[]): Site | null {
+  let best: Site | null = null;
+  let bestN = ROUNDS;
+  for (const s of SITES) {
+    const n = roundsDone(done, s.id);
+    if (n < bestN) {
+      best = s;
+      bestN = n;
+    }
+  }
+  return best;
+}

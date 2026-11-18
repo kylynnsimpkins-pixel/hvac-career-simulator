@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
 import { SCENARIOS } from "@/game/data/scenarios";
 import { REQUIRED_ITEMS } from "@/game/data/labGames";
-import { COMPLAINTS, ROUNDS, SITES, followUpFor, jobKey, roundsDone, scenarioFor, type Prop, type Site } from "@/game/data/jobsites";
+import { COMPLAINTS, ROUNDS, SITES, assignedSite, followUpFor, jobKey, roundsDone, scenarioFor, type Prop, type Site } from "@/game/data/jobsites";
 import type { Reward } from "@/store/gameStore";
 import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
@@ -148,6 +148,19 @@ export class JobsiteScene extends Phaser.Scene {
       if (this.dialogue.active) this.dialogue.advance();
       else this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
+
+    const done = useGameStore.getState().active?.completedQuests ?? [];
+    const job = assignedSite(done);
+    if (this.levelIndex === 0 && !data.fromAbove && job && job.id !== this.site.id) {
+      this.busy = true;
+      this.dialogue.start(
+        [
+          { speaker: this.owner(), text: "Hello? Sorry, we weren't expecting a service call today. I think you have the wrong address." },
+          { speaker: "You", text: "My mistake. Let me check my work order and find the right building." },
+        ],
+        () => this.scene.start("JobMapScene"),
+      );
+    }
   }
 
   private drawInteriorBackdrop(attic: boolean) {
