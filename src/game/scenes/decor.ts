@@ -249,3 +249,38 @@ export function trashCan(scene: Phaser.Scene, x: number, y: number) {
 export function sign(scene: Phaser.Scene, x: number, y: number, text: string, bg = "#166534") {
   scene.add.text(x, y, text, { fontFamily: FONT, fontSize: "9px", color: "#ffffff", backgroundColor: bg, padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(5);
 }
+
+const hx = (n: number) => "#" + n.toString(16).padStart(6, "0");
+const shade = (n: number, k: number) => {
+  const f = (v: number) => Math.max(0, Math.min(255, Math.round(v + k)));
+  return ((f((n >> 16) & 255) << 16) | (f((n >> 8) & 255) << 8) | f(n & 255));
+};
+
+/** Generic shaded, rounded furniture body with top highlight, bevel and soft shadow. */
+export function furnitureBody(scene: Phaser.Scene, x: number, y: number, w: number, h: number, color: number) {
+  const key = canvasTexture(scene, `d-fb-${w}-${h}-${color}`, w + 12, h + 14, (c) => {
+    c.fillStyle = "rgba(0,0,0,0.25)";
+    c.beginPath(); c.ellipse(w / 2 + 6, h + 6, w / 2 + 2, 5, 0, 0, Math.PI * 2); c.fill();
+    const g = c.createLinearGradient(0, 4, 0, h + 4);
+    g.addColorStop(0, hx(shade(color, 35))); g.addColorStop(0.18, hx(color)); g.addColorStop(1, hx(shade(color, -45)));
+    c.fillStyle = g;
+    c.beginPath(); c.roundRect(6, 4, w, h, 5); c.fill();
+    c.strokeStyle = hx(shade(color, -80)); c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = "rgba(255,255,255,0.28)"; c.beginPath(); c.roundRect(9, 6, w - 6, 3, 2); c.fill();
+    c.fillStyle = "rgba(0,0,0,0.18)"; c.fillRect(8, h - 2, w - 4, 4);
+  });
+  return scene.add.image(x, y - 3, key).setScale(0.5).setDepth(y + 1);
+}
+
+/** Woven rug/mat for floor props. */
+export function floorMat(scene: Phaser.Scene, x: number, y: number, w: number, h: number, color: number) {
+  const key = canvasTexture(scene, `d-mat-${w}-${h}-${color}`, w, h, (c) => {
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, hx(shade(color, 20))); g.addColorStop(1, hx(shade(color, -25)));
+    c.fillStyle = g; c.beginPath(); c.roundRect(0, 0, w, h, 4); c.fill();
+    c.strokeStyle = "rgba(255,255,255,0.5)"; c.lineWidth = 2; c.strokeRect(5, 5, w - 10, h - 10);
+    c.strokeStyle = "rgba(0,0,0,0.12)"; c.lineWidth = 1;
+    for (let i = 10; i < w - 8; i += 6) { c.beginPath(); c.moveTo(i, 8); c.lineTo(i, h - 8); c.stroke(); }
+  });
+  scene.add.image(x, y, key).setScale(0.5).setDepth(1);
+}

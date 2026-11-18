@@ -7,7 +7,7 @@ import type { Reward } from "@/store/gameStore";
 import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { QuizBox } from "./QuizBox";
-import { doorMat, floorLamp, hvacUnit, picture, plant, sign, stairsArt, windowPane } from "./decor";
+import { doorMat, floorLamp, floorMat, furnitureBody, hvacUnit, picture, plant, sign, stairsArt, windowPane } from "./decor";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
 
@@ -188,14 +188,11 @@ export class JobsiteScene extends Phaser.Scene {
     if (raw === "~Plant") return plant(this, x, y);
     if (raw === "~Lamp") return floorLamp(this, x, y);
     if (raw?.startsWith("~")) {
-      this.add.rectangle(x, y, w, h, color).setDepth(1);
-      this.add.rectangle(x, y, w - 8, h - 8, 0x000000, 0).setStrokeStyle(2, 0xffffff, 0.4).setDepth(1);
+      floorMat(this, x, y, w, h, color);
       return;
     }
     const label = raw;
-    this.add.rectangle(x, y + 4, w, h, 0x000000, 0.2).setDepth(y);
-    this.add.rectangle(x, y, w, h, color).setStrokeStyle(2, 0x222222).setDepth(y + 1);
-    this.add.rectangle(x, y - h / 2 + 3, w - 4, 4, 0xffffff, 0.25).setDepth(y + 2);
+    furnitureBody(this, x, y, w, h, color);
     this.detail(label, x, y, w, h);
     if (label) this.add.text(x, y + h / 2 - 7, label, { fontFamily: FONT, fontSize: "9px", color: "#111111" }).setOrigin(0.5).setDepth(y + 4);
     block(x, y, w, h);

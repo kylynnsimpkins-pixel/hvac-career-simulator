@@ -43,6 +43,7 @@ export interface Look {
   tie?: number;
   glasses?: boolean;
   belt?: boolean;
+  female?: boolean;
 }
 
 export function drawPerson(ctx: Ctx, look: Look, frame: number) {
@@ -65,7 +66,15 @@ export function drawPerson(ctx: Ctx, look: Look, frame: number) {
     fillShape(ctx, skin);
   });
   // Torso with soft shading.
-  rr(ctx, 7, 20, 18, 16, 4);
+  if (look.female) {
+    ctx.beginPath();
+    ctx.moveTo(9, 20);
+    ctx.lineTo(23, 20);
+    ctx.quadraticCurveTo(21, 28, 24.5, 36);
+    ctx.lineTo(7.5, 36);
+    ctx.quadraticCurveTo(11, 28, 9, 20);
+    ctx.closePath();
+  } else rr(ctx, 7, 20, 18, 16, 4);
   fillShape(ctx, grad(ctx, 7, 0, 25, 0, mix(look.shirt, 12), mix(look.shirt, -28)));
   if (look.tie !== undefined) {
     ctx.beginPath();
@@ -119,6 +128,18 @@ export function drawPerson(ctx: Ctx, look: Look, frame: number) {
   ctx.arc(10.8, 14.6, 1.6, 0, Math.PI * 2);
   ctx.arc(21.2, 14.6, 1.6, 0, Math.PI * 2);
   ctx.fill();
+  if (look.female) {
+    ctx.strokeStyle = "#1f1a17";
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(11.2, 10.6); ctx.lineTo(10.2, 9.8);
+    ctx.moveTo(20.8, 10.6); ctx.lineTo(21.8, 9.8);
+    ctx.stroke();
+    ctx.fillStyle = "#c2415a";
+    ctx.beginPath();
+    ctx.ellipse(16, 15.6, 1.8, 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
   if (look.glasses) {
     ctx.strokeStyle = "#3b3b3b";
     ctx.lineWidth = 1;
@@ -204,6 +225,44 @@ function drawHair(ctx: Ctx, style: string, color: number, hatOn: boolean) {
       ctx.lineTo(19, 8);
       ctx.closePath();
       fillShape(ctx, css(color));
+      break;
+    case "bob":
+      hairCap(ctx, color);
+      [[7.2, 18], [24.8, 18]].forEach(([x, h], i) => strand(x, 8, x, h, 3.6, i));
+      strand(8, 18, 24, 18, 1, 0);
+      break;
+    case "pigtails":
+      hairCap(ctx, color);
+      [[6.5, 23], [25.5, 23]].forEach(([x, h], i) => strand(x, 9, x + (i ? 2 : -2), h, 3.8, i));
+      break;
+    case "bun":
+      hairCap(ctx, color);
+      blob(16, 1.8, 3.8);
+      break;
+    case "braid":
+      hairCap(ctx, color);
+      strand(23.5, 9, 25.5, 17, 3, 0);
+      strand(25.5, 17, 24.5, 26, 2.6, 1);
+      break;
+    case "pixie":
+      hairCap(ctx, color, 6);
+      ctx.beginPath();
+      ctx.moveTo(8, 9);
+      ctx.quadraticCurveTo(12, 3, 24, 8);
+      ctx.lineTo(24, 11);
+      ctx.lineTo(19, 8);
+      ctx.closePath();
+      fillShape(ctx, css(color));
+      break;
+    case "sidesweep":
+      hairCap(ctx, color, 6);
+      ctx.beginPath();
+      ctx.moveTo(8, 12);
+      ctx.quadraticCurveTo(10, 3, 22, 4);
+      ctx.quadraticCurveTo(14, 7, 12, 13);
+      ctx.closePath();
+      fillShape(ctx, css(color));
+      strand(7.4, 9, 7.4, 20, 3, 1);
       break;
     case "dreads":
       hairCap(ctx, color);

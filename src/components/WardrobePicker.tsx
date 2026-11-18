@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { drawPerson } from "@/game/scenes/avatar";
-import { ARTICLES, buildLook, type Wardrobe } from "@/game/data/wardrobe";
+import { articlesFor, buildLook, type Gender, type Wardrobe } from "@/game/data/wardrobe";
 
 const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
 
 export default function WardrobePicker({ value, onChange }: { value: Wardrobe; onChange: (w: Wardrobe) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const articles = articlesFor(value.gender);
+  const setGender = (g: Gender) => onChange({ ...value, gender: g, hair: 0 });
 
   useEffect(() => {
     const ctx = canvas.current?.getContext("2d");
@@ -26,14 +28,26 @@ export default function WardrobePicker({ value, onChange }: { value: Wardrobe; o
           type="button"
           className="rounded bg-slate-600 px-2 py-1 text-xs"
           onClick={() =>
-            onChange(Object.fromEntries(ARTICLES.map((a) => [a.key, Math.floor(Math.random() * a.items.length)])) as unknown as Wardrobe)
+            onChange({ gender: value.gender, ...Object.fromEntries(articles.map((a) => [a.key, Math.floor(Math.random() * a.items.length)])) } as unknown as Wardrobe)
           }
         >
           Randomize
         </button>
       </div>
       <div className="min-w-[260px] flex-1 space-y-2">
-        {ARTICLES.map((a) => (
+        <div className="flex gap-2">
+          {(["boy", "girl"] as const).map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setGender(g)}
+              className={`rounded px-3 py-1 text-sm ${(value.gender ?? "boy") === g ? "bg-hvac-blue" : "bg-slate-700"}`}
+            >
+              {g === "boy" ? "Boy" : "Girl"}
+            </button>
+          ))}
+        </div>
+        {articles.map((a) => (
           <div key={a.key}>
             <div className="text-xs text-slate-300">
               {a.label}: <span className="text-white">{a.items[value[a.key]]?.name}</span>

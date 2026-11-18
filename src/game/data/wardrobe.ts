@@ -1,9 +1,11 @@
 import type { Look } from "@/game/scenes/avatar";
 
-export type HairStyle = "bald" | "buzz" | "crop" | "side" | "curly" | "afro" | "long" | "ponytail" | "mohawk" | "dreads";
+export type Gender = "boy" | "girl";
+export type HairStyle = "bald" | "bob" | "pigtails" | "bun" | "braid" | "pixie" | "sidesweep" | "buzz" | "crop" | "side" | "curly" | "afro" | "long" | "ponytail" | "mohawk" | "dreads";
 export type HatStyle = "none" | "hardhat" | "cap" | "beanie";
 
 export interface Wardrobe {
+  gender?: Gender;
   skin: number;
   hair: number;
   hat: number;
@@ -91,7 +93,32 @@ export const SHOES = [
   { name: "Green boots", color: 0x365314 },
 ];
 
-export const ARTICLES: { key: keyof Wardrobe; label: string; items: { name: string; color: number }[] }[] = [
+export const HAIR_GIRL: { name: string; style: HairStyle; color: number }[] = [
+  { name: "Long hair", style: "long", color: 0x3b2314 },
+  { name: "Ponytail", style: "ponytail", color: 0xd8b25c },
+  { name: "Bob", style: "bob", color: 0x15100c },
+  { name: "Pigtails", style: "pigtails", color: 0x6b2e1a },
+  { name: "Top bun", style: "bun", color: 0x2a1a10 },
+  { name: "Side braid", style: "braid", color: 0x8a5a2b },
+  { name: "Pixie cut", style: "pixie", color: 0xc23b3b },
+  { name: "Curly top", style: "curly", color: 0x1f1510 },
+  { name: "Afro puffs", style: "afro", color: 0x15100c },
+  { name: "Side sweep", style: "sidesweep", color: 0xe5c07b },
+];
+
+export const hairFor = (g?: Gender) => (g === "girl" ? HAIR_GIRL : HAIR);
+
+type Article = { key: Exclude<keyof Wardrobe, "gender">; label: string; items: { name: string; color: number }[] };
+export const articlesFor = (g?: Gender): Article[] => [
+  { key: "skin", label: "Skin tone", items: SKIN_TONES },
+  { key: "hair", label: "Hair", items: hairFor(g) },
+  { key: "hat", label: "Hat", items: HATS },
+  { key: "top", label: "Top", items: TOPS },
+  { key: "pants", label: "Pants", items: PANTS },
+  { key: "shoes", label: "Shoes", items: SHOES },
+];
+
+export const ARTICLES: Article[] = [
   { key: "skin", label: "Skin tone", items: SKIN_TONES },
   { key: "hair", label: "Hair", items: HAIR },
   { key: "hat", label: "Hat", items: HATS },
@@ -104,7 +131,7 @@ const pick = <T,>(list: T[], i: number | undefined) => list[Math.max(0, Math.min
 
 export function buildLook(w: Wardrobe | undefined): Look {
   const wd = { ...DEFAULT_WARDROBE, ...w };
-  const hair = pick(HAIR, wd.hair);
+  const hair = pick(hairFor(wd.gender), wd.hair);
   const hat = pick(HATS, wd.hat);
   return {
     shirt: pick(TOPS, wd.top).color,
@@ -116,5 +143,6 @@ export function buildLook(w: Wardrobe | undefined): Look {
     hatStyle: hat.style,
     hat: hat.color,
     belt: true,
+    female: wd.gender === "girl",
   };
 }
