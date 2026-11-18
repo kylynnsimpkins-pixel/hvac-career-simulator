@@ -1,0 +1,1 @@
+{ "name": "electrical-lab", "width": 16, "height": 12, "tileSize": 32, "spawn": { "x": 8, "y": 10 }, "doors": [{ "x": 8, "y": 11, "to": "campus" }] }

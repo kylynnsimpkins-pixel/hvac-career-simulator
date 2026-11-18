@@ -1,0 +1,5 @@
+[
+  { "id": "w1", "category": "wiring", "prompt": "Which wire color is typically the 24V common (C) on a thermostat?", "choices": ["Red", "Blue", "White"], "answerIndex": 1, "xp": 15 },
+  { "id": "w2", "category": "wiring", "prompt": "Which thermostat terminal is 24V power?", "choices": ["R", "G", "Y"], "answerIndex": 0, "xp": 15 },
+  { "id": "w3", "category": "wiring", "prompt": "Which terminal calls for the fan?", "choices": ["W", "G", "O"], "answerIndex": 1, "xp": 15 }
+]

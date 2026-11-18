@@ -1,0 +1,1 @@
+{ "name": "campus", "width": 20, "height": 15, "tileSize": 32, "spawn": { "x": 10, "y": 12 }, "doors": [{ "x": 3, "y": 2, "to": "classroom" }, { "x": 8, "y": 2, "to": "electrical-lab" }, { "x": 13, "y": 2, "to": "refrigeration-lab" }, { "x": 17, "y": 2, "to": "troubleshooting-center" }] }

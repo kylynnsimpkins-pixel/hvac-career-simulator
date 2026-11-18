@@ -1,0 +1,4 @@
+id,symptom,likely_cause,first_check
+tr1,Compressor hums but won't start,Bad run capacitor,Measure capacitance
+tr2,Frozen evaporator coil,Restricted airflow,Check filter and blower
+tr3,No 24V at thermostat,Failed transformer,Measure secondary voltage

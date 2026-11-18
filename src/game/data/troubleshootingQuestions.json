@@ -1,0 +1,5 @@
+[
+  { "id": "t1", "category": "troubleshooting", "prompt": "Outdoor fan runs but compressor hums and won't start. Likely cause?", "choices": ["Bad run capacitor", "Dirty filter", "Low thermostat battery"], "answerIndex": 0, "xp": 20 },
+  { "id": "t2", "category": "troubleshooting", "prompt": "Evaporator coil is frozen. Common cause?", "choices": ["Restricted airflow", "Overcharged system only", "Bad contactor coil"], "answerIndex": 0, "xp": 20 },
+  { "id": "t3", "category": "troubleshooting", "prompt": "No 24V at the thermostat. First check?", "choices": ["Transformer output", "Refrigerant charge", "Duct leakage"], "answerIndex": 0, "xp": 20 }
+]

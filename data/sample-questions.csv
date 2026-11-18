@@ -1,0 +1,4 @@
+id,category,prompt,choice_a,choice_b,choice_c,answer,xp
+q1,basics,What does HVAC stand for?,"Heating, Ventilation, and Air Conditioning",Heat Volts AC Current,High Voltage Air Control,A,10
+q2,electrical,Ohm's law is?,V = I x R,P = V / R,I = V x R,A,10
+q3,refrigeration,Which component compresses refrigerant?,Evaporator,Compressor,Metering device,B,10

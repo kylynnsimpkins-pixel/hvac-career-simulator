@@ -1,0 +1,5 @@
+[
+  { "id": "cr1", "category": "basics", "prompt": "What does HVAC stand for?", "choices": ["Heating, Ventilation, and Air Conditioning", "Heat, Volts, AC, Current", "High Voltage Air Control"], "answerIndex": 0, "xp": 10 },
+  { "id": "cr2", "category": "refrigeration", "prompt": "Which component compresses refrigerant vapor?", "choices": ["Evaporator", "Compressor", "Metering device"], "answerIndex": 1, "xp": 10 },
+  { "id": "cr3", "category": "refrigeration", "prompt": "Where does refrigerant absorb heat from indoor air?", "choices": ["Condenser", "Evaporator", "Receiver"], "answerIndex": 1, "xp": 10 }
+]

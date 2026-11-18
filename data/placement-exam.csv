@@ -1,0 +1,4 @@
+id,prompt,choice_a,choice_b,choice_c,answer
+pe1,A capacitor stores?,Charge,Refrigerant,Heat,A
+pe2,Which unit measures cooling capacity?,Volts,BTU/hr,Ohms,B
+pe3,Thermostat terminal R is?,24V power,Fan,Cooling,A

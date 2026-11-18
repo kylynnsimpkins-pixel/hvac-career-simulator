@@ -1,0 +1,4 @@
+id,type,prompt,choice_a,choice_b,choice_c,answer
+e1,core,Venting refrigerant to the atmosphere is?,Allowed,Prohibited,Allowed outdoors,B
+e2,type1,Type I covers appliances with how much refrigerant?,5 lb or less,50 lb,Any amount,A
+e3,type2,Type II covers which appliances?,Small appliances,High-pressure systems,Low-pressure chillers,B

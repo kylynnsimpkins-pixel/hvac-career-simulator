@@ -1,0 +1,5 @@
+[
+  { "id": "p1", "category": "placement", "prompt": "Ohm's law is:", "choices": ["V = I x R", "P = V / R", "I = V x R"], "answerIndex": 0, "xp": 10 },
+  { "id": "p2", "category": "placement", "prompt": "A capacitor stores:", "choices": ["Charge", "Refrigerant", "Heat"], "answerIndex": 0, "xp": 10 },
+  { "id": "p3", "category": "placement", "prompt": "Which unit measures cooling capacity?", "choices": ["Volts", "BTU/hr", "Ohms"], "answerIndex": 1, "xp": 10 }
+]

@@ -1,0 +1,5 @@
+[
+  { "id": "c1", "category": "epa608", "prompt": "Venting CFC, HCFC, and HFC refrigerants to the atmosphere is:", "choices": ["Allowed in small amounts", "Prohibited", "Allowed outdoors"], "answerIndex": 1, "xp": 25 },
+  { "id": "c2", "category": "osha10", "prompt": "What does PPE stand for?", "choices": ["Personal Protective Equipment", "Proper Pressure Estimate", "Portable Power Equipment"], "answerIndex": 0, "xp": 25 },
+  { "id": "c3", "category": "nate", "prompt": "Typical airflow per ton of cooling is about:", "choices": ["100 CFM", "400 CFM", "1000 CFM"], "answerIndex": 1, "xp": 25 }
+]
