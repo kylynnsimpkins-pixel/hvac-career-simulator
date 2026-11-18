@@ -306,9 +306,9 @@ export interface Address {
 /** What the work order says; the buildings on the town map only show their street address. */
 export const ADDRESSES: Record<string, Address> = {
   ranch: { street: "412 Maple Lane", customer: "Ms. Patel", note: "One-story home, attic unit" },
-  twostory: { street: "1208 Oak Street", customer: "The Johnson family", note: "Two-story home, bedroom hall" },
-  grocery: { street: "88 Market Avenue", customer: "Fresh Mart manager", note: "Grocery store, rooftop unit" },
-  school: { street: "300 Learning Way", customer: "Principal Davis", note: "School, classroom wing" },
+  twostory: { street: "426 Maple Lane", customer: "The Johnson family", note: "Two-story home, bedroom hall" },
+  grocery: { street: "88 Main Street", customer: "Fresh Mart manager", note: "Grocery store, rooftop unit" },
+  school: { street: "300 Main Street", customer: "Principal Davis", note: "School, classroom wing" },
   restaurant: { street: "52 Main Street", customer: "Rosa, owner", note: "Restaurant, kitchen rooftop unit" },
 };
 

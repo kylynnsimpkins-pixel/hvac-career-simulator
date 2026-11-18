@@ -16,6 +16,7 @@ export default function GameCanvas() {
       const { LabScene } = await import("@/game/scenes/LabScene");
       const { DriveHomeScene } = await import("@/game/scenes/DriveHomeScene");
       const { JobMapScene } = await import("@/game/scenes/JobMapScene");
+      const { ArrivalScene } = await import("@/game/scenes/ArrivalScene");
       const { JobsiteScene } = await import("@/game/scenes/JobsiteScene");
       const { GraduationScene } = await import("@/game/scenes/GraduationScene");
       const { ExamScene } = await import("@/game/scenes/ExamScene");
@@ -38,7 +39,7 @@ export default function GameCanvas() {
         height: 960,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-        scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, JobsiteScene, GraduationScene, ExamScene],
+        scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene],
       });
       game.events.once("ready", () => {
         const frame = (s: Phaser.Scene) => {
