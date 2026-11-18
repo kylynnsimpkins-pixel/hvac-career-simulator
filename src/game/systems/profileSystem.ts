@@ -6,6 +6,8 @@ export function createProfile(playerName: string, avatarColor = "#38bdf8", speci
     avatarColor,
     seenIntro: false,
     lessonDay: 0,
+    stationsDone: [],
+    checkedOut: [],
     specialty,
     inventory: ["multimeter"],
     skillPoints: 0,

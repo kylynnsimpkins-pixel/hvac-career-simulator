@@ -1,9 +1,12 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
-import { BRIEFINGS } from "@/game/data/dialogue";
+import { GAMES, consumedParts, labGreeting, missingItemLines, redirectLines, REQUIRED_ITEMS, focusFor, planFor, stationKey, INSTRUCTOR } from "@/game/data/labGames";
 import { LAB_LAYOUTS, type LabLayout, type Station } from "@/game/data/labLayouts";
 import { BUILDINGS } from "./CampusScene";
 import { DialogueBox } from "./DialogueBox";
+import { QuizBox } from "./QuizBox";
+import { MiniGame } from "./MiniGame";
+import { CribBox } from "./CribBox";
 import { addVignette, dropShadow, hudBar } from "./fx";
 
 const FONT = "monospace";
@@ -16,6 +19,10 @@ export class LabScene extends Phaser.Scene {
   private shadow!: Phaser.GameObjects.Ellipse;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private dialogue!: DialogueBox;
+  private quiz!: QuizBox;
+  private mini!: MiniGame;
+  private crib!: CribBox;
+  private inside = new Set<string>();
   private toast!: Phaser.GameObjects.Text;
   private progress!: Phaser.GameObjects.Text;
   private target: Phaser.Math.Vector2 | null = null;
@@ -23,8 +30,6 @@ export class LabScene extends Phaser.Scene {
   private frameTick = 0;
   private label = "";
   private layout!: LabLayout;
-  private visited = new Set<string>();
-  private rewarded = false;
 
   constructor() {
     super("LabScene");
@@ -36,9 +41,8 @@ export class LabScene extends Phaser.Scene {
       return;
     }
     this.label = data.building;
+    this.inside = new Set();
     this.layout = LAB_LAYOUTS[this.label];
-    this.visited = new Set();
-    this.rewarded = false;
     this.target = null;
     this.drawRoom();
 
@@ -54,9 +58,9 @@ export class LabScene extends Phaser.Scene {
       block(s.x, s.y, s.w, BENCH_H);
     });
 
-    this.add.image(320, 320, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(320);
-    dropShadow(this, 320, 318, 26, 8, 319);
-    block(320, 310, 22, 12);
+    this.add.image(420, 300, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(300);
+    dropShadow(this, 420, 298, 26, 8, 299);
+    block(420, 290, 22, 12);
 
     hudBar(this, `${this.layout.title}  -  walk up to each station, exit by the bottom door`);
     this.progress = this.add
@@ -72,6 +76,9 @@ export class LabScene extends Phaser.Scene {
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);
+    this.quiz = new QuizBox(this);
+    this.mini = new MiniGame(this);
+    this.crib = new CribBox(this);
     this.toast = this.add
       .text(320, 350, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
       .setOrigin(0.5)
@@ -83,12 +90,13 @@ export class LabScene extends Phaser.Scene {
     this.input.keyboard!.on("keydown-SPACE", () => this.dialogue.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.dialogue.advance());
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
+      if (this.overlay) return;
       if (this.dialogue.active) this.dialogue.advance();
       else this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
 
-    const briefing = BRIEFINGS[this.label];
-    if (briefing) this.time.delayedCall(300, () => this.dialogue.start(briefing, () => {}));
+    const lessonDay = useGameStore.getState().active?.lessonDay ?? 0;
+    this.time.delayedCall(300, () => this.dialogue.start(labGreeting(this.label, lessonDay), () => {}));
   }
 
   update(_time: number, delta: number) {
@@ -96,7 +104,7 @@ export class LabScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0);
 
-    if (this.dialogue.active) {
+    if (this.dialogue.active || this.overlay) {
       this.target = null;
       this.player.setTexture("player-0");
       return;
@@ -125,8 +133,10 @@ export class LabScene extends Phaser.Scene {
     this.shadow.setPosition(this.player.x, this.player.y - 2).setDepth(this.player.y - 1);
 
     for (const s of this.layout.stations) {
-      if (this.visited.has(s.id)) continue;
-      if (Phaser.Math.Distance.Between(this.player.x, this.player.y, s.x, s.y + BENCH_H / 2 + 14) < 44) {
+      const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, s.x, s.y + BENCH_H / 2 + 14) < 44;
+      if (!near) this.inside.delete(s.id);
+      else if (!this.inside.has(s.id)) {
+        this.inside.add(s.id);
         this.useStation(s);
         break;
       }
@@ -134,35 +144,95 @@ export class LabScene extends Phaser.Scene {
     if (this.player.y >= 472) this.scene.start("CampusScene", { from: this.label });
   }
 
+  private get overlay() {
+    return this.quiz.active || this.mini.active || this.crib.active;
+  }
+
+  private say(text: string, onDone: () => void = () => {}) {
+    this.dialogue.start([{ speaker: INSTRUCTOR, text }], onDone);
+  }
+
   private useStation(s: Station) {
     const store = useGameStore.getState();
-    if (!store.active) {
+    const a = store.active;
+    if (!a) {
       this.showToast("Create a profile first");
       return;
     }
-    this.visited.add(s.id);
-    this.updateProgress();
+    if (s.kind === "crib") {
+      this.crib.open(a.checkedOut, (items) => useGameStore.getState().patch({ checkedOut: items }));
+      return;
+    }
+    if (a.lessonDay <= 0) {
+      this.dialogue.start(labGreeting(this.label, 0), () => {});
+      return;
+    }
+    const lesson = a.lessonDay - 1;
+    if (!focusFor(lesson).kinds.includes(s.kind)) {
+      this.dialogue.start(redirectLines(this.label, lesson, s), () => {});
+      return;
+    }
+    if (a.stationsDone.includes(stationKey(lesson, this.label, s.id))) {
+      this.say(`You've already finished the ${s.name} for ${planFor(lesson).title}. Check the other stations or head back to class.`);
+      return;
+    }
+    const missing = (REQUIRED_ITEMS[s.kind] ?? []).filter((i) => !a.checkedOut.includes(i));
+    if (missing.length) {
+      this.dialogue.start(missingItemLines(missing), () => {});
+      return;
+    }
     this.dialogue.start(
       s.lines.map((text) => ({ speaker: s.name, text })),
-      () => this.checkComplete(),
+      () => this.playGame(s, lesson),
     );
   }
 
-  private checkComplete() {
-    if (this.rewarded || this.visited.size < this.layout.stations.length) return;
-    this.rewarded = true;
-    const b = BUILDINGS.find((x) => x.label === this.label);
-    if (!b) return;
+  private playGame(s: Station, lesson: number) {
+    const def = GAMES[s.kind];
+    if (!def) return;
+    const done = (stars: number) => this.completeStation(s, lesson, Math.max(1, stars));
+    if (def.type === "sequence") this.mini.startSequence(def.title, def.prompt, def.steps, (m) => done(3 - m));
+    else if (def.type === "match") this.mini.startMatch(def.title, def.prompt, def.pairs, (m) => done(3 - m));
+    else this.quiz.start(def.make(), (correct) => done(correct), def.title);
+  }
+
+  private completeStation(s: Station, lesson: number, stars: number) {
     const store = useGameStore.getState();
-    if (b.labId) store.completeLab(b.labId, b.reward);
-    else store.reward(b.reward);
-    this.showToast(`${this.layout.title} complete: ${b.message}`);
+    const a = store.active;
+    if (!a) return;
+    const reward = { xp: 20 + stars * 15, graduationPoints: stars * 5, money: stars * 5 };
+    const used = consumedParts(s.kind);
+    const stationsDone = [...a.stationsDone, stationKey(lesson, this.label, s.id)];
+    store.reward(reward);
+    store.patch({ stationsDone, checkedOut: a.checkedOut.filter((i) => !used.includes(i)) });
+    this.updateProgress();
+    this.showToast(`${s.name}: ${"*".repeat(stars)} +${reward.xp} XP, +${reward.graduationPoints} Grad, +$${reward.money}`);
+
+    const focus = focusFor(lesson);
+    const here = this.layout.stations.filter((x) => focus.kinds.includes(x.kind));
+    const allDone = here.every((x) => stationsDone.includes(stationKey(lesson, this.label, x.id)));
+    const bonusKey = stationKey(lesson, this.label, "lab");
+    const b = BUILDINGS.find((x) => x.label === this.label);
+    if (allDone && b && !stationsDone.includes(bonusKey)) {
+      const s2 = useGameStore.getState();
+      if (b.labId) s2.completeLab(b.labId, b.reward);
+      else s2.reward(b.reward);
+      s2.patch({ stationsDone: [...stationsDone, bonusKey] });
+      this.time.delayedCall(1200, () => this.say(`All of today's stations here are done. Lab bonus: ${b.message}. Nice work, and don't forget your assignments!`));
+    }
   }
 
   private updateProgress() {
-    this.progress.setText(`Stations ${this.visited.size}/${this.layout.stations.length}`);
+    const a = useGameStore.getState().active;
+    if (!a || a.lessonDay <= 0) {
+      this.progress.setText("Attend class first");
+      return;
+    }
+    const lesson = a.lessonDay - 1;
+    const here = this.layout.stations.filter((x) => focusFor(lesson).kinds.includes(x.kind));
+    const n = here.filter((x) => a.stationsDone.includes(stationKey(lesson, this.label, x.id))).length;
+    this.progress.setText(here.length ? `Today's stations ${n}/${here.length}` : "No stations for today's lesson");
   }
-
   private showToast(text: string) {
     this.toast.setText(text).setVisible(true);
     this.time.delayedCall(2600, () => this.toast.setVisible(false));
@@ -222,6 +292,11 @@ export class LabScene extends Phaser.Scene {
       this.add.circle(s.x + x, s.y + y, rad, col).setStrokeStyle(1, stroke).setDepth(depth);
 
     switch (s.kind) {
+      case "crib":
+        r(0, -26, 44, 32, 0x2f855a, 0x1c4532);
+        for (let i = -1; i <= 1; i++) r(i * 13, -26, 2, 30, 0x1c4532);
+        r(0, -40, 36, 5, 0xf7fafc);
+        break;
       case "wiring":
         r(0, -26, 80, 26, 0xf7fafc, 0x4a5568);
         [0xe53e3e, 0x3182ce, 0x38a169, 0xecc94b].forEach((col, i) => {

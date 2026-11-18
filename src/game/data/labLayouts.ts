@@ -1,7 +1,7 @@
 export type StationKind =
   | "wiring" | "meter" | "panel" | "parts"
   | "compressor" | "gauges" | "recovery" | "coil"
-  | "furnace" | "thermostat" | "airflow" | "workorder";
+  | "crib" | "furnace" | "thermostat" | "airflow" | "workorder";
 
 export interface Station {
   id: string;
@@ -37,6 +37,7 @@ export const LAB_LAYOUTS: Record<string, LabLayout> = {
       { id: "meter", name: "Multimeter Station", kind: "meter", x: 235, y: BACK_Y, w: 110, lines: ["Multimeter Station: practice reading volts, amps and ohms. Meter first, then power."] },
       { id: "panel", name: "Breaker Panel", kind: "panel", x: 405, y: BACK_Y, w: 110, lines: ["Breaker Panel: lockout/tagout before touching anything. Verify dead with your meter."] },
       { id: "parts", name: "Parts Cabinet", kind: "parts", x: 545, y: BACK_Y, w: 110, lines: ["Parts Cabinet: capacitors, contactors and relays. Match the rating on the old part."] },
+      { id: "crib", name: "Tool Crib", kind: "crib", x: 320, y: BACK_Y, w: 54, lines: [] },
       { id: "xformer", name: "Transformer Rack", kind: "panel", x: 140, y: MID_Y, w: 100, lines: ["Transformer Rack: step 240V down to 24V for the control circuit."] },
       { id: "motor", name: "Motor Test Bench", kind: "airflow", x: 500, y: MID_Y, w: 100, lines: ["Motor Test Bench: check windings, run capacitor and amp draw on fan motors."] },
     ],
@@ -52,6 +53,7 @@ export const LAB_LAYOUTS: Record<string, LabLayout> = {
       { id: "gauges", name: "Gauge Manifold Station", kind: "gauges", x: 235, y: BACK_Y, w: 110, lines: ["Gauge Manifold: blue is low side, red is high side. Read pressures before adding charge."] },
       { id: "coil", name: "Evaporator Coil Trainer", kind: "coil", x: 405, y: BACK_Y, w: 110, lines: ["Evaporator Coil: refrigerant absorbs heat here. Check superheat to confirm proper charge."] },
       { id: "condenser", name: "Condenser Trainer", kind: "airflow", x: 545, y: BACK_Y, w: 110, lines: ["Condenser: rejects heat outdoors. Dirty coils mean high head pressure."] },
+      { id: "crib", name: "Tool Crib", kind: "crib", x: 320, y: BACK_Y, w: 54, lines: [] },
       { id: "recovery", name: "Recovery Machine", kind: "recovery", x: 140, y: MID_Y, w: 100, lines: ["Recovery Machine: never vent refrigerant. Recover it into a certified cylinder."] },
       { id: "parts", name: "Tool and Parts Cart", kind: "parts", x: 500, y: MID_Y, w: 100, lines: ["Tool Cart: flare tools, tubing cutters, nitrogen and a vacuum pump live here."] },
     ],
@@ -67,8 +69,9 @@ export const LAB_LAYOUTS: Record<string, LabLayout> = {
       { id: "furnace", name: "Furnace Trainer", kind: "furnace", x: 235, y: BACK_Y, w: 110, lines: ["Furnace Trainer: no heat? Check power, thermostat call, ignition, then gas."] },
       { id: "thermostat", name: "Thermostat Wall", kind: "thermostat", x: 405, y: BACK_Y, w: 110, lines: ["Thermostat Wall: practice R, W, Y, G and C wiring and test for a 24V call."] },
       { id: "airflow", name: "Airflow Station", kind: "airflow", x: 545, y: BACK_Y, w: 110, lines: ["Airflow Station: dirty filters and weak blowers cause many 'no cooling' calls."] },
+      { id: "crib", name: "Tool Crib", kind: "crib", x: 320, y: BACK_Y, w: 54, lines: [] },
       { id: "meter", name: "Diagnostic Meter Bench", kind: "meter", x: 140, y: MID_Y, w: 100, lines: ["Diagnostic Bench: power, controls, then the load. Let your meter find the fault."] },
-      { id: "compressor", name: "Fault Trainer Rig", kind: "compressor", x: 500, y: MID_Y, w: 100, lines: ["Fault Trainer Rig: the instructor plants a fault and you track it down step by step."] },
+      { id: "faultrig", name: "Fault Trainer Rig", kind: "furnace", x: 500, y: MID_Y, w: 100, lines: ["Fault Trainer Rig: the instructor plants a fault and you track it down step by step."] },
     ],
   },
 };

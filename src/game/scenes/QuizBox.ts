@@ -17,7 +17,7 @@ export class QuizBox {
   private options: Phaser.GameObjects.Text[] = [];
   private feedback: Phaser.GameObjects.Text;
   private hint: Phaser.GameObjects.Text;
-  private run: { qs: QuizQuestion[]; i: number; correct: number; answered: boolean; onDone: (correct: number) => void } | null = null;
+  private run: { qs: QuizQuestion[]; i: number; correct: number; answered: boolean; title: string; onDone: (correct: number) => void } | null = null;
 
   constructor(private scene: Phaser.Scene) {
     const bg = scene.add.rectangle(320, 270, 600, 330, 0x10162b, 0.97).setStrokeStyle(3, 0xfde047).setInteractive();
@@ -47,8 +47,8 @@ export class QuizBox {
     return this.run !== null;
   }
 
-  start(qs: QuizQuestion[], onDone: (correct: number) => void) {
-    this.run = { qs, i: 0, correct: 0, answered: false, onDone };
+  start(qs: QuizQuestion[], onDone: (correct: number) => void, title = "DAILY QUIZ") {
+    this.run = { qs, i: 0, correct: 0, answered: false, title, onDone };
     this.box.setVisible(true);
     this.show();
   }
@@ -57,7 +57,7 @@ export class QuizBox {
     const r = this.run!;
     const q = r.qs[r.i];
     r.answered = false;
-    this.header.setText(`DAILY QUIZ  -  Question ${r.i + 1} of ${r.qs.length}`);
+    this.header.setText(`${r.title}  -  Question ${r.i + 1} of ${r.qs.length}`);
     this.question.setText(q.q);
     this.feedback.setVisible(false);
     this.options.forEach((o, i) => {

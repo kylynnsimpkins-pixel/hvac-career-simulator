@@ -15,6 +15,8 @@ export interface SaveProfile extends Skills {
   placementScore?: number;
   seenIntro: boolean;
   lessonDay: number;
+  stationsDone: string[];
+  checkedOut: string[];
 
   completedLabs: string[];
   graduated: boolean;
