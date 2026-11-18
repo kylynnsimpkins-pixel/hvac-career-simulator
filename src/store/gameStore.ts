@@ -38,6 +38,7 @@ interface GameState {
   earnCertification: (id: CertificationId) => boolean;
   chooseCareer: (path: string) => void;
   submitPlacement: (score: number, xp: number) => void;
+  patch: (changes: Partial<SaveProfile>) => void;
 }
 
 let flashTimer: ReturnType<typeof setTimeout> | undefined;
@@ -156,6 +157,11 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!a || !canEarn(a, id)) return false;
       commit({ ...a, certifications: addCertification(a, id) });
       return true;
+    },
+
+    patch: (changes) => {
+      const a = get().active;
+      if (a) commit({ ...a, ...changes });
     },
 
     submitPlacement: (score, xp) => {

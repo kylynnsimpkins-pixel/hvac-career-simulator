@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { useGameStore, type Reward } from "@/store/gameStore";
+import { BRIEFINGS, INTRO, classroomLines, type DialogueLine } from "@/game/data/dialogue";
 
 interface Building {
   label: string;
@@ -39,6 +40,12 @@ export class CampusScene extends Phaser.Scene {
   private cooldown = new Map<string, number>();
   private frameTick = 0;
   private lastPos = new Phaser.Math.Vector2();
+  private box!: Phaser.GameObjects.Container;
+  private speakerText!: Phaser.GameObjects.Text;
+  private bodyText!: Phaser.GameObjects.Text;
+  private dialogue: { lines: DialogueLine[]; index: number; onDone: () => void } | null = null;
+  private typing: Phaser.Time.TimerEvent | null = null;
+  private introChecked = false;
 
   constructor() {
     super("CampusScene");
@@ -83,8 +90,17 @@ export class CampusScene extends Phaser.Scene {
       .setDepth(10000)
       .setVisible(false);
 
+    this.buildDialogueBox();
+    this.add.image(150, 196, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(196);
+
+    this.input.keyboard!.on("keydown-SPACE", () => this.advance());
+    this.input.keyboard!.on("keydown-ENTER", () => this.advance());
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
+      if (this.dialogue) {
+        this.advance();
+        return;
+      }
       this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
   }
@@ -92,6 +108,21 @@ export class CampusScene extends Phaser.Scene {
   update(time: number, delta: number) {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0);
+
+    if (!this.introChecked && useGameStore.getState().active) {
+      this.introChecked = true;
+      const a = useGameStore.getState().active!;
+      if (!a.seenIntro) {
+        this.startDialogue(INTRO.map((l) => ({ ...l, text: l.text.replace("{name}", a.playerName) })), () =>
+          useGameStore.getState().patch({ seenIntro: true }),
+        );
+      }
+    }
+    if (this.dialogue) {
+      this.target = null;
+      this.player.setTexture("player-0");
+      return;
+    }
 
     const { left, right, up, down } = this.cursors;
     if (left.isDown || right.isDown || up.isDown || down.isDown) {
@@ -131,9 +162,67 @@ export class CampusScene extends Phaser.Scene {
       this.showToast("Create a profile first");
       return;
     }
-    if (b.labId) store.completeLab(b.labId, b.reward);
-    else store.reward(b.reward);
-    this.showToast(`${b.label}: ${b.message}`);
+    const finish = () => {
+      if (b.labId) store.completeLab(b.labId, b.reward);
+      else store.reward(b.reward);
+      if (b.label === "Classroom") useGameStore.getState().patch({ lessonDay: store.active!.lessonDay + 1 });
+      this.cooldown.set(b.label, this.time.now + 3000);
+      this.showToast(`${b.label}: ${b.message}`);
+    };
+    const lines = b.label === "Classroom" ? classroomLines(store.active.playerName, store.active.lessonDay) : BRIEFINGS[b.label];
+    if (lines) this.startDialogue(lines, finish);
+    else finish();
+  }
+
+  private buildDialogueBox() {
+    const bg = this.add.rectangle(320, 410, 616, 112, 0x10162b, 0.95).setStrokeStyle(3, 0xfde047);
+    const portraitBg = this.add.rectangle(66, 410, 84, 96, 0x24304f).setStrokeStyle(2, 0x8aa0d6);
+    const portrait = this.add.image(66, 440, "teacher").setScale(3.2).setOrigin(0.5, 1);
+    this.speakerText = this.add.text(124, 366, "", { fontFamily: FONT, fontSize: "13px", color: "#fde047", fontStyle: "bold" });
+    this.bodyText = this.add.text(124, 386, "", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", wordWrap: { width: 480 } });
+    const hint = this.add.text(612, 458, "SPACE / tap ▶", { fontFamily: FONT, fontSize: "10px", color: "#8aa0d6" }).setOrigin(1, 1);
+    this.box = this.add.container(0, 0, [bg, portraitBg, portrait, this.speakerText, this.bodyText, hint]).setDepth(20000).setVisible(false);
+  }
+
+  private startDialogue(lines: DialogueLine[], onDone: () => void) {
+    this.dialogue = { lines, index: 0, onDone };
+    this.box.setVisible(true);
+    this.showLine();
+  }
+
+  private showLine() {
+    const d = this.dialogue!;
+    const line = d.lines[d.index];
+    this.speakerText.setText(line.speaker);
+    this.bodyText.setText("");
+    let i = 0;
+    this.typing?.remove();
+    this.typing = this.time.addEvent({
+      delay: 22,
+      repeat: line.text.length - 1,
+      callback: () => this.bodyText.setText(line.text.slice(0, ++i)),
+      callbackScope: this,
+    });
+  }
+
+  private advance() {
+    const d = this.dialogue;
+    if (!d) return;
+    const line = d.lines[d.index];
+    if (this.typing && this.typing.getRepeatCount() > 0) {
+      this.typing.remove();
+      this.typing = null;
+      this.bodyText.setText(line.text);
+      return;
+    }
+    if (d.index + 1 < d.lines.length) {
+      d.index++;
+      this.showLine();
+      return;
+    }
+    this.dialogue = null;
+    this.box.setVisible(false);
+    d.onDone();
   }
 
   private showToast(text: string) {
@@ -222,6 +311,17 @@ export class CampusScene extends Phaser.Scene {
     g.fillStyle(0x3f9a41).fillCircle(11, 12, 8).fillCircle(21, 14, 8);
     g.fillStyle(0x62bd5a).fillCircle(12, 9, 4);
     gen("tree", 32, 40);
+
+    // Teacher: gray hair, glasses, tie.
+    g.fillStyle(0x3a3a3a).fillRect(4, 17, 3, 6).fillRect(9, 17, 3, 6);
+    g.fillStyle(0xf5f5f5).fillRect(3, 9, 10, 9);
+    g.fillStyle(0xb02a2a).fillRect(7, 10, 2, 7);
+    g.fillStyle(0xf5f5f5).fillRect(1, 10, 2, 6).fillRect(13, 10, 2, 6);
+    g.fillStyle(0xf1c27d).fillRect(4, 3, 8, 7).fillRect(1, 16, 2, 2).fillRect(13, 16, 2, 2);
+    g.fillStyle(0xbdbdbd).fillRect(3, 0, 10, 4).fillRect(3, 3, 1, 4).fillRect(12, 3, 1, 4);
+    g.fillStyle(0x222222).fillRect(5, 6, 3, 2).fillRect(9, 6, 3, 2);
+    g.fillStyle(0x9fd8f5).fillRect(6, 6, 1, 1).fillRect(10, 6, 1, 1);
+    gen("teacher", 16, 24);
 
     g.destroy();
   }

@@ -4,6 +4,8 @@ import { levelTitle } from "./xpSystem";
 export function createProfile(playerName: string, avatarColor = "#38bdf8", specialty = "Residential"): SaveProfile {
   return {
     avatarColor,
+    seenIntro: false,
+    lessonDay: 0,
     specialty,
     inventory: ["multimeter"],
     skillPoints: 0,
