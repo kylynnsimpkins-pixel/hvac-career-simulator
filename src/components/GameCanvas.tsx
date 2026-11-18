@@ -20,15 +20,35 @@ export default function GameCanvas() {
       const { GraduationScene } = await import("@/game/scenes/GraduationScene");
       const { ExamScene } = await import("@/game/scenes/ExamScene");
       if (cancelled || !ref.current) return;
+      // Render at 2x for crisp, smooth art; scenes still lay out in 640x480 world units.
+      const factory = Phaser.GameObjects.GameObjectFactory.prototype as unknown as { text: (...a: unknown[]) => Phaser.GameObjects.Text; __hires?: boolean };
+      if (!factory.__hires) {
+        const orig = factory.text;
+        factory.text = function (this: unknown, ...args: unknown[]) {
+          return orig.apply(this, args).setResolution(2);
+        };
+        factory.__hires = true;
+      }
       game = new Phaser.Game({
         type: Phaser.AUTO,
-        pixelArt: true,
+        pixelArt: false,
+        antialias: true,
         parent: ref.current,
-        width: 640,
-        height: 480,
+        width: 1280,
+        height: 960,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
         scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, JobsiteScene, GraduationScene, ExamScene],
+      });
+      game.events.once("ready", () => {
+        const frame = (s: Phaser.Scene) => {
+          s.cameras.main.setZoom(2).centerOn(320, 240);
+          s.physics?.world.setBounds(0, 0, 640, 480);
+        };
+        game!.scene.scenes.forEach((s) => {
+          s.sys.events.on(Phaser.Scenes.Events.CREATE, () => frame(s));
+          if (s.sys.isActive()) frame(s);
+        });
       });
     })();
 

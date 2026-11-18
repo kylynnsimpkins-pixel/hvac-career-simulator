@@ -8,6 +8,7 @@ import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { QuizBox } from "./QuizBox";
 import { floorLamp, picture, plant, sign, windowPane } from "./decor";
+import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
 
 const FONT = "monospace";
@@ -126,9 +127,9 @@ export class JobsiteScene extends Phaser.Scene {
     const spawn =
       this.levelIndex === 0 && !fromAbove ? { x: 320, y: 440 } : fromAbove && lv.up ? { x: lv.up.x, y: lv.up.y + 55 } : { x: lv.down!.x, y: lv.down!.y + 55 };
     this.shadow = this.add.ellipse(spawn.x, spawn.y, 18, 7, 0x000000, 0.35);
-    this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1).setScale(CHAR_SCALE);
     this.player.setCollideWorldBounds(true);
-    (this.player.body as Phaser.Physics.Arcade.Body).setSize(14, 10).setOffset(1, 22);
+    (this.player.body as Phaser.Physics.Arcade.Body).setSize(CHAR_BODY.w, CHAR_BODY.h).setOffset(CHAR_BODY.ox, CHAR_BODY.oy);
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);

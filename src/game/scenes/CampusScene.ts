@@ -1,7 +1,9 @@
 import * as Phaser from "phaser";
 import { useGameStore, type Reward } from "@/store/gameStore";
 import { INTRO, type DialogueLine } from "@/game/data/dialogue";
-import { addVignette, dropShadow, hudBar } from "./fx";
+import { addVignette, dropShadow, hudBar, simsPanel } from "./fx";
+import { CHAR_BODY, CHAR_SCALE, makeCharacterTextures, plumbob } from "./characters";
+import { makeCampusTextures } from "./campusArt";
 
 interface Building {
   label: string;
@@ -29,8 +31,6 @@ const SPEED = 170;
 const DOOR_OFFSET = 62;
 const FONT = "monospace";
 
-const shade = (c: number, amt: number) => Phaser.Display.Color.ValueToColor(c).darken(amt).color;
-const tint = (c: number, amt: number) => Phaser.Display.Color.ValueToColor(c).lighten(amt).color;
 
 export class CampusScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -58,8 +58,8 @@ export class CampusScene extends Phaser.Scene {
 
     const walls = this.physics.add.staticGroup();
     BUILDINGS.forEach((b) => {
-      dropShadow(this, b.x + 6, b.y + 52, 140, 22, b.y + 30);
-      const img = this.add.image(b.x, b.y, `bld-${b.label}`).setDepth(b.y + 48);
+      dropShadow(this, b.x + 8, b.y + 54, 150, 26, b.y + 30);
+      const img = this.add.image(b.x, b.y, `bld-${b.label}`).setScale(0.5).setDepth(b.y + 48);
       // Solid body covers the building but leaves the door row walkable.
       const wall = this.add.zone(b.x, b.y - 8, 124, 76);
       this.physics.add.existing(wall, true);
@@ -75,8 +75,8 @@ export class CampusScene extends Phaser.Scene {
     });
 
     TREES.forEach(([x, y]) => {
-      dropShadow(this, x, y + 16, 30, 10, y + 10);
-      this.add.image(x, y, "tree").setDepth(y + 16);
+      dropShadow(this, x, y + 18, 34, 12, y + 10);
+      this.add.image(x, y, "tree").setScale(0.5).setDepth(y + 16);
     });
 
     const color = useGameStore.getState().active?.avatarColor ?? "#38bdf8";
@@ -84,13 +84,16 @@ export class CampusScene extends Phaser.Scene {
     const from = BUILDINGS.find((b) => b.label === data?.from);
     const spawn = from ? { x: from.x, y: from.y + DOOR_OFFSET + 50 } : { x: 320, y: 430 };
     this.shadow = this.add.ellipse(320, 446, 18, 7, 0x000000, 0.35);
-    this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1).setScale(CHAR_SCALE);
     this.player.setCollideWorldBounds(true);
     const body = this.player.body as Phaser.Physics.Arcade.Body;
-    body.setSize(14, 10).setOffset(1, 22);
+    body.setSize(CHAR_BODY.w, CHAR_BODY.h).setOffset(CHAR_BODY.ox, CHAR_BODY.oy);
     this.physics.add.collider(this.player, walls);
 
     hudBar(this, "HVAC Tech Academy  -  arrows / tap to walk, step on the ▼ doors");
+    plumbob(this, this.player, 36);
+    this.drawProps();
+    simsPanel(this);
     addVignette(this);
     this.toast = this.add
       .text(320, 440, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
@@ -101,7 +104,7 @@ export class CampusScene extends Phaser.Scene {
     this.drawVan();
     this.drawTestCenter();
     this.buildDialogueBox();
-    this.add.image(150, 196, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(196);
+    this.add.image(150, 196, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(196);
 
     this.input.keyboard!.on("keydown-SPACE", () => this.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.advance());
@@ -184,6 +187,22 @@ export class CampusScene extends Phaser.Scene {
     }
   }
 
+  private drawProps() {
+    const lamps: [number, number][] = [[60, 214], [215, 214], [425, 214], [580, 214], [250, 400], [390, 400]];
+    lamps.forEach(([x, y]) => {
+      dropShadow(this, x, y + 2, 20, 8, y - 2);
+      this.add.image(x, y - 24, "lamp").setScale(0.5).setDepth(y);
+      this.add.image(x, y - 38, "glow").setScale(0.9).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.35).setDepth(9350);
+    });
+    [[200, 228], [450, 228], [300, 392]].forEach(([x, y]) => {
+      dropShadow(this, x, y + 6, 46, 12, y);
+      this.add.image(x, y, "bench").setScale(0.5).setDepth(y);
+    });
+    BUILDINGS.forEach((b) => {
+      [-56, 56].forEach((dx) => this.add.image(b.x + dx, b.y + 60, "bush").setScale(0.5).setDepth(b.y + 70));
+    });
+  }
+
   private drawTestCenter() {
     this.add.ellipse(530, 470, 70, 8, 0x000000, 0.25).setDepth(440);
     this.add.rectangle(530, 450, 64, 34, 0xe2e8f0).setStrokeStyle(2, 0x1a3a6b).setDepth(450);
@@ -218,7 +237,7 @@ export class CampusScene extends Phaser.Scene {
   private buildDialogueBox() {
     const bg = this.add.rectangle(320, 410, 616, 112, 0x10162b, 0.95).setStrokeStyle(3, 0xfde047);
     const portraitBg = this.add.rectangle(66, 410, 84, 96, 0x24304f).setStrokeStyle(2, 0x8aa0d6);
-    const portrait = this.add.image(66, 440, "teacher").setScale(3.2).setOrigin(0.5, 1);
+    const portrait = this.add.image(66, 440, "teacher").setScale(1.6).setOrigin(0.5, 1);
     this.speakerText = this.add.text(124, 366, "", { fontFamily: FONT, fontSize: "13px", color: "#fde047", fontStyle: "bold" });
     this.bodyText = this.add.text(124, 386, "", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", wordWrap: { width: 480 } });
     const hint = this.add.text(612, 458, "SPACE / tap ▶", { fontFamily: FONT, fontSize: "10px", color: "#8aa0d6" }).setOrigin(1, 1);
@@ -277,13 +296,13 @@ export class CampusScene extends Phaser.Scene {
   }
 
   private drawGround() {
-    this.add.tileSprite(320, 240, 640, 480, "grass").setDepth(0);
+    this.add.tileSprite(320, 240, 640, 480, "grass").setTileScale(0.5).setDepth(0);
     // Stone paths: main avenue, the lab row, and the plaza.
-    this.add.tileSprite(320, 190, 640, 36, "path").setDepth(1);
-    this.add.tileSprite(320, 340, 48, 300, "path").setDepth(1);
-    this.add.tileSprite(320, 360, 200, 40, "path").setDepth(1);
+    this.add.tileSprite(320, 190, 640, 36, "path").setTileScale(0.5).setDepth(1);
+    this.add.tileSprite(320, 340, 48, 300, "path").setTileScale(0.5).setDepth(1);
+    this.add.tileSprite(320, 360, 200, 40, "path").setTileScale(0.5).setDepth(1);
     [110, 530].forEach((x) => this.add.tileSprite(x, 160, 36, 60, "path").setDepth(1));
-    this.add.tileSprite(320, 152, 40, 40, "path").setDepth(1);
+    this.add.tileSprite(320, 152, 40, 40, "path").setTileScale(0.5).setDepth(1);
     // Flower patches.
     for (let i = 0; i < 40; i++) {
       const x = Phaser.Math.Between(10, 630);
@@ -294,99 +313,10 @@ export class CampusScene extends Phaser.Scene {
   }
 
   private makeTextures() {
-    if (this.textures.exists("grass")) return;
-    const g = this.make.graphics({ x: 0, y: 0 }, false);
-    const gen = (key: string, w: number, h: number) => {
-      g.generateTexture(key, w, h);
-      g.clear();
-    };
-
-    // Grass: base + deterministic speckles.
-    g.fillStyle(0x4f9d46).fillRect(0, 0, 32, 32);
-    for (let i = 0; i < 26; i++) {
-      g.fillStyle(i % 3 === 0 ? 0x3f8a3a : 0x66b25a).fillRect((i * 11) % 32, (i * 17) % 32, 2, 2);
-    }
-    gen("grass", 32, 32);
-
-    // Cobblestone path.
-    g.fillStyle(0xb8a98a).fillRect(0, 0, 32, 32);
-    g.lineStyle(1, 0x8f8168);
-    for (let y = 0; y < 32; y += 8) {
-      g.lineBetween(0, y, 32, y);
-      for (let x = (y / 8) % 2 ? 8 : 0; x < 32; x += 16) g.lineBetween(x, y, x, y + 8);
-    }
-    gen("path", 32, 32);
-
-    BUILDINGS.forEach((b) => {
-      const w = 128;
-      const h = 112;
-      // Wall with brick courses.
-      g.fillStyle(b.wall).fillRect(4, 34, w - 8, h - 34);
-      g.lineStyle(1, shade(b.wall, 12));
-      for (let y = 44; y < h; y += 8) g.lineBetween(4, y, w - 4, y);
-      g.fillStyle(shade(b.wall, 25)).fillRect(4, h - 8, w - 8, 8);
-      // Roof with shingle rows and overhang.
-      g.fillStyle(shade(b.roof, 30)).fillRect(0, 30, w, 6);
-      g.fillStyle(b.roof).fillRect(2, 0, w - 4, 30);
-      g.lineStyle(1, shade(b.roof, 20));
-      for (let y = 6; y < 30; y += 6) g.lineBetween(2, y, w - 2, y);
-      g.fillStyle(tint(b.roof, 15)).fillRect(2, 0, w - 4, 3);
-      // Windows.
-      [16, 88].forEach((wx) => {
-        g.fillStyle(0x5a3a1c).fillRect(wx - 2, 46, 28, 26);
-        g.fillStyle(0x9fd8f5).fillRect(wx, 48, 24, 22);
-        g.fillStyle(0xffffff).fillRect(wx + 2, 50, 6, 3);
-        g.lineStyle(2, 0x5a3a1c).lineBetween(wx + 12, 48, wx + 12, 70).lineBetween(wx, 59, wx + 24, 59);
-      });
-      // Door with step.
-      g.fillStyle(0x3b2410).fillRect(50, 62, 28, 50);
-      g.fillStyle(0x7a4a22).fillRect(52, 64, 24, 48);
-      g.fillStyle(0x5b3515).fillRect(62, 64, 2, 48);
-      g.fillStyle(0xffd34d).fillRect(70, 90, 3, 3);
-      g.fillStyle(0x8a8a8a).fillRect(46, 108, 36, 4);
-      gen(`bld-${b.label}`, w, h);
-    });
-
-    // Tree.
-    g.fillStyle(0x6b4423).fillRect(13, 24, 6, 16);
-    g.fillStyle(0x2f7a32).fillCircle(16, 16, 14);
-    g.fillStyle(0x3f9a41).fillCircle(11, 12, 8).fillCircle(21, 14, 8);
-    g.fillStyle(0x62bd5a).fillCircle(12, 9, 4);
-    gen("tree", 32, 40);
-
-    // Teacher: gray hair, glasses, tie.
-    g.fillStyle(0x3a3a3a).fillRect(4, 17, 3, 6).fillRect(9, 17, 3, 6);
-    g.fillStyle(0xf5f5f5).fillRect(3, 9, 10, 9);
-    g.fillStyle(0xb02a2a).fillRect(7, 10, 2, 7);
-    g.fillStyle(0xf5f5f5).fillRect(1, 10, 2, 6).fillRect(13, 10, 2, 6);
-    g.fillStyle(0xf1c27d).fillRect(4, 3, 8, 7).fillRect(1, 16, 2, 2).fillRect(13, 16, 2, 2);
-    g.fillStyle(0xbdbdbd).fillRect(3, 0, 10, 4).fillRect(3, 3, 1, 4).fillRect(12, 3, 1, 4);
-    g.fillStyle(0x222222).fillRect(5, 6, 3, 2).fillRect(9, 6, 3, 2);
-    g.fillStyle(0x9fd8f5).fillRect(6, 6, 1, 1).fillRect(10, 6, 1, 1);
-    gen("teacher", 16, 24);
-
-    g.destroy();
+    makeCampusTextures(this, BUILDINGS);
   }
 
   private makePlayerTextures(shirt: number) {
-    for (let f = 0; f < 2; f++) {
-      const g = this.make.graphics({ x: 0, y: 0 }, false);
-      // Boots/legs (alternate stride).
-      g.fillStyle(0x2b3a67).fillRect(4, 17, 3, 5 + (f ? 1 : 0)).fillRect(9, 17, 3, 5 + (f ? 0 : 1));
-      g.fillStyle(0x3a2a1a).fillRect(3, 22, 4, 2).fillRect(9, 22, 4, 2);
-      // Torso with tool belt.
-      g.fillStyle(shirt).fillRect(3, 9, 10, 9);
-      g.fillStyle(shade(shirt, 30)).fillRect(3, 9, 2, 9).fillRect(3, 15, 10, 2);
-      g.fillStyle(0xc9a227).fillRect(7, 15, 2, 2);
-      // Arms.
-      g.fillStyle(shirt).fillRect(1, 10, 2, 6).fillRect(13, 10, 2, 6);
-      g.fillStyle(0xf1c27d).fillRect(1, 16, 2, 2).fillRect(13, 16, 2, 2);
-      // Head + hard hat.
-      g.fillStyle(0xf1c27d).fillRect(4, 3, 8, 7);
-      g.fillStyle(0x222222).fillRect(6, 6, 1, 2).fillRect(9, 6, 1, 2);
-      g.fillStyle(0xffd400).fillRect(3, 0, 10, 4).fillRect(2, 3, 12, 2);
-      g.generateTexture(`player-${f}`, 16, 24);
-      g.destroy();
-    }
+    makeCharacterTextures(this, shirt);
   }
 }

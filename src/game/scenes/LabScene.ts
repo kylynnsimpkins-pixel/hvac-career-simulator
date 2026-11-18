@@ -7,6 +7,7 @@ import { DialogueBox } from "./DialogueBox";
 import { SCENARIOS } from "@/game/data/scenarios";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { CribBox } from "./CribBox";
+import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, dropShadow, hudBar } from "./fx";
 import { bulletinBoard, extinguisher, plant, sign, trashCan, wallClock } from "./decor";
 
@@ -59,7 +60,7 @@ export class LabScene extends Phaser.Scene {
       block(s.x, s.y, s.w, BENCH_H);
     });
 
-    this.add.image(420, 300, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(300);
+    this.add.image(420, 300, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(300);
     dropShadow(this, 420, 298, 26, 8, 299);
     block(420, 290, 22, 12);
 
@@ -71,9 +72,9 @@ export class LabScene extends Phaser.Scene {
     this.updateProgress();
 
     this.shadow = this.add.ellipse(320, 440, 18, 7, 0x000000, 0.35);
-    this.player = this.physics.add.sprite(320, 440, "player-0").setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(320, 440, "player-0").setOrigin(0.5, 1).setScale(CHAR_SCALE);
     this.player.setCollideWorldBounds(true);
-    (this.player.body as Phaser.Physics.Arcade.Body).setSize(14, 10).setOffset(1, 22);
+    (this.player.body as Phaser.Physics.Arcade.Body).setSize(CHAR_BODY.w, CHAR_BODY.h).setOffset(CHAR_BODY.ox, CHAR_BODY.oy);
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);

@@ -39,7 +39,7 @@ export class GraduationScene extends Phaser.Scene {
     this.add.rectangle(320, 168, 100, 8, 0x8a5a2b);
     this.add.rectangle(320, 160, 4, 20, 0x374151);
     this.add.circle(320, 148, 4, 0xfde047);
-    this.add.image(320, 200, "teacher").setScale(2).setOrigin(0.5, 1).setDepth(5);
+    this.add.image(320, 200, "teacher").setScale(1).setOrigin(0.5, 1).setDepth(5);
     this.add.rectangle(320, 214, 90, 40, 0x6b4423).setStrokeStyle(2, 0x3b2a1a).setDepth(6);
     this.add.text(320, 214, "HVAC", { fontFamily: FONT, fontSize: "11px", color: "#fde047" }).setOrigin(0.5).setDepth(7);
 
@@ -54,7 +54,7 @@ export class GraduationScene extends Phaser.Scene {
     }
     this.add.rectangle(320, 250, 64, 330, 0xb91c1c, 0.0);
 
-    this.grad = this.add.image(-40, 250, "player-0").setScale(1.6).setOrigin(0.5, 1).setDepth(300).setTint(0x1f2937);
+    this.grad = this.add.image(-40, 250, "player-0").setScale(0.8).setOrigin(0.5, 1).setDepth(300).setTint(0x1f2937);
     const cap = this.add.rectangle(-40, 215, 22, 5, 0x111827).setDepth(301);
     const tassel = this.add.rectangle(-31, 220, 2, 8, 0xfde047).setDepth(301);
     this.dialogue = new DialogueBox(this);

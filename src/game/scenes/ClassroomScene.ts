@@ -3,6 +3,7 @@ import { useGameStore } from "@/store/gameStore";
 import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
+import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
 import { bulletinBoard, extinguisher, plant, rug, sign, trashCan } from "./decor";
 
@@ -49,7 +50,7 @@ export class ClassroomScene extends Phaser.Scene {
     };
 
     // Teacher and desk.
-    this.add.image(320, 184, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(166);
+    this.add.image(320, 184, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(166);
     this.add.rectangle(320, 194, 116, 26, 0x8a5a2b).setStrokeStyle(2, 0x4b2e12).setDepth(190);
     this.add.rectangle(320, 188, 116, 8, 0xb07a45).setDepth(191);
     this.add.rectangle(296, 184, 14, 5, 0xc23b3b).setDepth(192);
@@ -75,9 +76,9 @@ export class ClassroomScene extends Phaser.Scene {
     addVignette(this);
 
     this.shadow = this.add.ellipse(320, 440, 18, 7, 0x000000, 0.35);
-    this.player = this.physics.add.sprite(320, 440, "player-0").setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(320, 440, "player-0").setOrigin(0.5, 1).setScale(CHAR_SCALE);
     this.player.setCollideWorldBounds(true);
-    (this.player.body as Phaser.Physics.Arcade.Body).setSize(14, 10).setOffset(1, 22);
+    (this.player.body as Phaser.Physics.Arcade.Body).setSize(CHAR_BODY.w, CHAR_BODY.h).setOffset(CHAR_BODY.ox, CHAR_BODY.oy);
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);

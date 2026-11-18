@@ -14,7 +14,7 @@ export class DialogueBox {
   constructor(private scene: Phaser.Scene) {
     const bg = scene.add.rectangle(320, 410, 616, 112, 0x10162b, 0.95).setStrokeStyle(3, 0xfde047);
     const portraitBg = scene.add.rectangle(66, 410, 84, 96, 0x24304f).setStrokeStyle(2, 0x8aa0d6);
-    const portrait = scene.add.image(66, 440, "teacher").setScale(3.2).setOrigin(0.5, 1);
+    const portrait = scene.add.image(66, 440, "teacher").setScale(1.6).setOrigin(0.5, 1);
     this.speaker = scene.add.text(124, 366, "", { fontFamily: FONT, fontSize: "13px", color: "#fde047", fontStyle: "bold" });
     this.body = scene.add.text(124, 386, "", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", wordWrap: { width: 480 } });
     const hint = scene.add.text(612, 458, "SPACE / tap ▶", { fontFamily: FONT, fontSize: "10px", color: "#8aa0d6" }).setOrigin(1, 1);
