@@ -15,6 +15,7 @@ export default function GameCanvas() {
       if (cancelled || !ref.current) return;
       game = new Phaser.Game({
         type: Phaser.AUTO,
+        pixelArt: true,
         parent: ref.current,
         width: 640,
         height: 480,
