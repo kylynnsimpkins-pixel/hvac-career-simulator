@@ -3,6 +3,7 @@ import { useGameStore } from "@/store/gameStore";
 import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
+import { floorTexture, lightShafts, wallPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
 import { bulletinBoard, extinguisher, plant, rug, sign, trashCan } from "./decor";
@@ -184,11 +185,10 @@ export class ClassroomScene extends Phaser.Scene {
   }
 
   private drawRoom() {
-    this.add.tileSprite(320, 317, 640, 326, "wood").setDepth(0);
-    this.add.rectangle(320, 75, 640, 150, 0xa9bdd0).setDepth(0);
-    this.add.rectangle(320, 130, 640, 40, 0x6f8aa3).setDepth(0);
-    this.add.rectangle(320, 110, 640, 3, 0x4e657b).setDepth(0);
-    this.add.rectangle(320, 152, 640, 6, 0x4b3a2a).setDepth(1);
+    if (!this.textures.exists("floor-class")) floorTexture(this, "floor-class", "wood", 0xb98550, 0x8a5f33);
+    this.add.tileSprite(320, 317, 640, 326, "floor-class").setTileScale(0.5).setDepth(0);
+    wallPanel(this, 0xa9bdd0, 0x4b3a2a);
+    lightShafts(this, [120, 320, 520], 156);
 
     // Wall clock.
     this.add.circle(133, 40, 15, 0xf5f5f5).setStrokeStyle(3, 0x4b3a2a).setDepth(2);

@@ -164,7 +164,7 @@ export class CampusScene extends Phaser.Scene {
     this.player.setDepth(this.player.y);
     this.shadow.setPosition(this.player.x, this.player.y - 2).setDepth(this.player.y - 1);
 
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, 110, 440) < 40 && time > (this.cooldown.get("van") ?? 0)) {
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, 230, 440) < 40 && time > (this.cooldown.get("van") ?? 0)) {
       this.cooldown.set("van", time + 3000);
       if (useGameStore.getState().active) this.scene.start("JobMapScene");
       else this.showToast("Create a profile first");
@@ -212,13 +212,13 @@ export class CampusScene extends Phaser.Scene {
   }
 
   private drawVan() {
-    this.add.ellipse(110, 466, 86, 10, 0x000000, 0.25).setDepth(440);
-    this.add.rectangle(110, 452, 80, 28, 0xf8fafc).setStrokeStyle(2, 0x1e3a8a).setDepth(450);
-    this.add.rectangle(140, 456, 18, 20, 0xbfe3ff).setStrokeStyle(2, 0x1e3a8a).setDepth(451);
-    this.add.circle(86, 468, 7, 0x111111).setDepth(452);
-    this.add.circle(134, 468, 7, 0x111111).setDepth(452);
-    this.add.text(104, 450, "HVAC", { fontFamily: FONT, fontSize: "10px", color: "#1e3a8a", fontStyle: "bold" }).setOrigin(0.5).setDepth(453);
-    this.add.text(110, 420, "Service calls", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
+    this.add.ellipse(230, 466, 86, 10, 0x000000, 0.25).setDepth(440);
+    this.add.rectangle(230, 452, 80, 28, 0xf8fafc).setStrokeStyle(2, 0x1e3a8a).setDepth(450);
+    this.add.rectangle(260, 456, 18, 20, 0xbfe3ff).setStrokeStyle(2, 0x1e3a8a).setDepth(451);
+    this.add.circle(206, 468, 7, 0x111111).setDepth(452);
+    this.add.circle(254, 468, 7, 0x111111).setDepth(452);
+    this.add.text(224, 450, "HVAC", { fontFamily: FONT, fontSize: "10px", color: "#1e3a8a", fontStyle: "bold" }).setOrigin(0.5).setDepth(453);
+    this.add.text(230, 420, "Service calls", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
   }
 
   private enter(b: Building) {

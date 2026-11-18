@@ -7,6 +7,7 @@ import { DialogueBox } from "./DialogueBox";
 import { SCENARIOS } from "@/game/data/scenarios";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { CribBox } from "./CribBox";
+import { floorTexture, lightShafts, wallPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, dropShadow, hudBar } from "./fx";
 import { bulletinBoard, extinguisher, plant, sign, trashCan, wallClock } from "./decor";
@@ -240,18 +241,10 @@ export class LabScene extends Phaser.Scene {
   private drawRoom() {
     const { floor, floorLine, wall, trim } = this.layout;
     const key = `floor-${this.label}`;
-    if (!this.textures.exists(key)) {
-      const g = this.make.graphics({ x: 0, y: 0 }, false);
-      g.fillStyle(floor).fillRect(0, 0, 40, 40);
-      g.lineStyle(1, floorLine).strokeRect(0, 0, 40, 40);
-      g.fillStyle(Phaser.Display.Color.ValueToColor(floor).lighten(6).color).fillRect(2, 2, 14, 2);
-      g.generateTexture(key, 40, 40);
-      g.destroy();
-    }
-    this.add.tileSprite(320, 317, 640, 326, key).setDepth(0);
-    this.add.rectangle(320, 75, 640, 150, wall).setDepth(0);
-    this.add.rectangle(320, 130, 640, 40, Phaser.Display.Color.ValueToColor(wall).darken(14).color).setDepth(0);
-    this.add.rectangle(320, 150, 640, 6, trim).setDepth(1);
+    if (!this.textures.exists(key)) floorTexture(this, key, "tile", floor, floorLine);
+    this.add.tileSprite(320, 317, 640, 326, key).setTileScale(0.5).setDepth(0);
+    wallPanel(this, wall, trim);
+    lightShafts(this, [90, 550], 156);
 
     // Wall sign and windows.
     this.add.rectangle(320, 40, 280, 30, 0x1b2236).setStrokeStyle(2, trim).setDepth(2);
