@@ -15,4 +15,11 @@ export interface SaveProfile extends Skills {
 
   completedLabs: string[];
   graduated: boolean;
+
+  avatarColor: string;
+  specialty: string;
+  inventory: string[];
+  skillPoints: number;
+  unlockedSkills: string[];
+  completedQuests: string[];
 }

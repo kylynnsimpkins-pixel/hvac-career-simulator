@@ -37,3 +37,13 @@ create table if not exists grades (
   assignment_id integer not null references assignments(id) on delete cascade,
   score integer not null
 );
+
+create table if not exists cloud_saves (
+  player_name text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+-- Demo policy: anyone with the anon key can read/write saves. Tighten with auth before production.
+alter table cloud_saves enable row level security;
+create policy "anon saves" on cloud_saves for all using (true) with check (true);

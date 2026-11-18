@@ -1,8 +1,14 @@
 import type { SaveProfile } from "@/types/saveProfile";
 import { levelTitle } from "./xpSystem";
 
-export function createProfile(playerName: string): SaveProfile {
+export function createProfile(playerName: string, avatarColor = "#38bdf8", specialty = "Residential"): SaveProfile {
   return {
+    avatarColor,
+    specialty,
+    inventory: ["multimeter"],
+    skillPoints: 0,
+    unlockedSkills: [],
+    completedQuests: [],
     playerName: playerName.trim() || "Student",
     xp: 0,
     graduationPoints: 0,

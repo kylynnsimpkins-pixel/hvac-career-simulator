@@ -13,9 +13,9 @@ interface Building {
 
 const BUILDINGS: Building[] = [
   { label: "Classroom", x: 110, y: 90, color: 0x3b82f6, reward: { xp: 25, graduationPoints: 25 }, message: "+25 XP, +25 Graduation" },
-  { label: "Electrical Lab", x: 320, y: 90, color: 0xeab308, labId: "wiring-lab", reward: { xp: 50, contractorCredits: 20, skill: "electrical", skillPoints: 2 }, message: "+50 XP, +20 Credits" },
-  { label: "Refrigeration Lab", x: 530, y: 90, color: 0x06b6d4, labId: "refrigeration-lab", reward: { xp: 75, contractorCredits: 25, skill: "mechanical", skillPoints: 2 }, message: "+75 XP, +25 Credits" },
-  { label: "Troubleshooting", x: 320, y: 330, color: 0xef4444, labId: "electrical-diagnostics", reward: { xp: 100, contractorCredits: 50, skill: "diagnostics", skillPoints: 2 }, message: "+100 XP, +50 Credits" },
+  { label: "Electrical Lab", x: 320, y: 90, color: 0xeab308, labId: "wiring-lab", reward: { xp: 50, contractorCredits: 20, money: 40, skill: "electrical", skillPoints: 2 }, message: "+50 XP, +20 Credits" },
+  { label: "Refrigeration Lab", x: 530, y: 90, color: 0x06b6d4, labId: "refrigeration-lab", reward: { xp: 75, contractorCredits: 25, money: 40, skill: "mechanical", skillPoints: 2 }, message: "+75 XP, +25 Credits" },
+  { label: "Troubleshooting", x: 320, y: 330, color: 0xef4444, labId: "electrical-diagnostics", reward: { xp: 100, contractorCredits: 50, money: 40, skill: "diagnostics", skillPoints: 2 }, message: "+100 XP, +50 Credits" },
 ];
 
 const SPEED = 180;
@@ -40,7 +40,7 @@ export class CampusScene extends Phaser.Scene {
       this.add.text(b.x, b.y, b.label, { fontSize: "13px", color: "#000000" }).setOrigin(0.5);
     });
 
-    this.player = this.add.rectangle(320, 440, 20, 28, 0xffffff);
+    this.player = this.add.rectangle(320, 440, 20, 28, Phaser.Display.Color.HexStringToColor(useGameStore.getState().active?.avatarColor ?? "#ffffff").color);
     this.physics.add.existing(this.player);
     (this.player.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
 

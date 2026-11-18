@@ -6,6 +6,9 @@ import { createProfile } from "@/game/systems/profileSystem";
 import { levelTitle } from "@/game/systems/xpSystem";
 import { addCertification, canEarn } from "@/game/systems/certificationSystem";
 import { shouldGraduate } from "@/game/systems/graduationSystem";
+import { canBuyTool, canUnlockSkill, isQuestComplete } from "@/game/systems/progressionSystem";
+import { QUESTS, SKILL_TREE, TOOLS } from "@/game/data/gameContent";
+import { pullFromCloud, pushToCloud } from "@/game/systems/cloudSync";
 import { deleteSave, getActiveProfileName, listProfiles, loadGame, saveGame } from "@/game/systems/saveSystem";
 
 export interface Reward {
@@ -22,7 +25,12 @@ interface GameState {
   active: SaveProfile | null;
   justSaved: boolean;
   init: () => void;
-  newProfile: (name: string) => void;
+  newProfile: (name: string, avatarColor?: string, specialty?: string) => void;
+  buyTool: (id: string) => boolean;
+  unlockSkill: (id: string) => boolean;
+  claimQuest: (id: string) => boolean;
+  syncToCloud: () => Promise<boolean>;
+  loadFromCloud: (name: string) => Promise<boolean>;
   selectProfile: (name: string) => void;
   removeProfile: (name: string) => void;
   reward: (r: Reward) => void;
@@ -66,9 +74,49 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ profiles: listProfiles(), active: name ? loadGame(name) : null });
     },
 
-    newProfile: (name) => {
+    newProfile: (name, avatarColor, specialty) => {
       const existing = loadGame(name);
-      commit(existing ?? createProfile(name));
+      commit(existing ?? createProfile(name, avatarColor, specialty));
+    },
+
+    buyTool: (id) => {
+      const a = get().active;
+      if (!a || !canBuyTool(a, id)) return false;
+      const tool = TOOLS.find((t) => t.id === id)!;
+      commit({ ...a, money: a.money - tool.price, inventory: [...a.inventory, id] });
+      return true;
+    },
+
+    unlockSkill: (id) => {
+      const a = get().active;
+      if (!a || !canUnlockSkill(a, id)) return false;
+      const node = SKILL_TREE.find((s) => s.id === id)!;
+      commit({ ...a, skillPoints: a.skillPoints - node.cost, unlockedSkills: [...a.unlockedSkills, id] });
+      return true;
+    },
+
+    claimQuest: (id) => {
+      const a = get().active;
+      const q = QUESTS.find((x) => x.id === id);
+      if (!a || !q || a.completedQuests.includes(id) || !isQuestComplete(a, q)) return false;
+      commit({
+        ...applyReward(a, q.reward),
+        skillPoints: a.skillPoints + q.reward.skillPoints,
+        completedQuests: [...a.completedQuests, id],
+      });
+      return true;
+    },
+
+    syncToCloud: async () => {
+      const a = get().active;
+      return a ? pushToCloud(a) : false;
+    },
+
+    loadFromCloud: async (name) => {
+      const remote = await pullFromCloud(name);
+      if (!remote) return false;
+      commit({ ...createProfile(name), ...remote });
+      return true;
     },
 
     selectProfile: (name) => {
@@ -94,8 +142,10 @@ export const useGameStore = create<GameState>((set, get) => {
       const a = get().active;
       if (!a) return;
       const withReward = applyReward(a, r);
+      const firstTime = !a.completedLabs.includes(labId);
       commit({
         ...withReward,
+        skillPoints: withReward.skillPoints + (firstTime ? 1 : 0),
         completedLabs: a.completedLabs.includes(labId) ? a.completedLabs : [...a.completedLabs, labId],
       });
     },
