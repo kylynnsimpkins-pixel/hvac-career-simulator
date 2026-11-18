@@ -1,7 +1,6 @@
 import type { DialogueLine } from "./dialogue";
 import { HOMEWORK, LESSON_PLANS } from "./dialogue";
 import { LAB_LAYOUTS, type Station, type StationKind } from "./labLayouts";
-import type { QuizQuestion } from "@/game/scenes/QuizBox";
 
 export const INSTRUCTOR = "Mr. Rivera";
 
@@ -44,128 +43,22 @@ const isPart = (name: string) => CRIB_ITEMS.find((i) => i.name === name)?.type =
 
 /** Items that must be checked out before a station's mini game can start. */
 export const REQUIRED_ITEMS: Partial<Record<StationKind, string[]>> = {
-  wiring: ["Wire strippers", "Wire"],
-  meter: ["Multimeter"],
-  panel: ["Lockout kit"],
+  wiring: ["Multimeter", "Wire strippers", "Wire"],
+  meter: ["Multimeter", "Wire"],
+  panel: ["Multimeter", "Lockout kit"],
   parts: ["Multimeter", "Capacitor"],
-  compressor: ["Gauge manifold"],
-  gauges: ["Gauge manifold"],
-  coil: ["Gauge manifold"],
-  recovery: ["Recovery cylinder"],
+  compressor: ["Gauge manifold", "Multimeter", "Capacitor"],
+  gauges: ["Gauge manifold", "Air filter"],
+  coil: ["Gauge manifold", "Multimeter", "Wire"],
+  recovery: ["Gauge manifold", "Recovery cylinder"],
   airflow: ["Anemometer", "Air filter"],
-  furnace: ["Multimeter"],
-  thermostat: ["Screwdriver set"],
+  furnace: ["Multimeter", "Wire"],
+  workorder: ["Multimeter", "Screwdriver set"],
+  thermostat: ["Multimeter", "Screwdriver set"],
 };
 
+/** Only the replacement part is used up; measuring parts are never required. */
 export const consumedParts = (kind: StationKind) => (REQUIRED_ITEMS[kind] ?? []).filter(isPart);
-
-export type GameDef =
-  | { type: "sequence"; title: string; prompt: string; steps: string[] }
-  | { type: "match"; title: string; prompt: string; pairs: [string, string][] }
-  | { type: "quiz"; title: string; make: () => QuizQuestion[] };
-
-const rnd = (a: number, b: number) => Math.floor(Math.random() * (b - a + 1)) + a;
-const pick = <T,>(arr: T[]) => arr[rnd(0, arr.length - 1)];
-
-function numeric(q: string, correct: number, unit: string, why: string): QuizQuestion {
-  const set = new Set<number>([correct]);
-  const candidates = [correct * 2, Math.max(1, Math.round(correct / 2)), correct + rnd(2, 6), Math.max(1, correct - rnd(2, 6)), correct * 3];
-  for (const c of candidates) if (set.size < 4) set.add(c);
-  const choices = [...set].sort(() => Math.random() - 0.5);
-  return { q, choices: choices.map((c) => `${c} ${unit}`), answer: choices.indexOf(correct), why };
-}
-
-const meterQuiz = (): QuizQuestion[] =>
-  [0, 1, 2].map(() => {
-    const v = pick([24, 120, 240]);
-    const r = pick([6, 8, 10, 12, 24].filter((x) => (v / x) % 1 === 0));
-    const i = v / r;
-    return pick([
-      () => numeric(`A circuit has ${v} V across ${r} ohms. What current flows?`, i, "A", `I = V / R = ${v} / ${r} = ${i} amps.`),
-      () => numeric(`A load draws ${i} A on ${r} ohms. What is the voltage?`, v, "V", `V = I x R = ${i} x ${r} = ${v} volts.`),
-      () => numeric(`${v} V and ${i} A: what is the resistance?`, r, "ohms", `R = V / I = ${v} / ${i} = ${r} ohms.`),
-    ])();
-  });
-
-const capacitorQuiz = (): QuizQuestion[] =>
-  [0, 1, 2].map(() => {
-    const rated = pick([35, 40, 45]);
-    const good = Math.random() < 0.5;
-    const tol = rated * 0.06;
-    const measured = good ? Math.round((rated - tol + Math.random() * tol * 2) * 10) / 10 : Math.round(rated * (0.7 + Math.random() * 0.15) * 10) / 10;
-    const ok = Math.abs(measured - rated) <= tol;
-    return {
-      q: `Run capacitor rated ${rated} uF, +/-6%. Your meter reads ${measured} uF. What is the verdict?`,
-      choices: ["Good, within tolerance", "Weak, replace it"],
-      answer: ok ? 0 : 1,
-      why: `Allowed range is ${(rated - tol).toFixed(1)} to ${(rated + tol).toFixed(1)} uF.`,
-    };
-  });
-
-const superheatQuiz = (): QuizQuestion[] =>
-  [0, 1, 2].map(() => {
-    const sat = pick([36, 38, 40, 42]);
-    const line = sat + rnd(8, 16);
-    return numeric(`Suction line reads ${line} F and the saturation temp is ${sat} F. What is the superheat?`, line - sat, "F", `Superheat = line temp - saturation temp = ${line} - ${sat}.`);
-  });
-
-const cfmQuiz = (): QuizQuestion[] =>
-  [2, 3, 4].map((t) => numeric(`A ${t}-ton system needs about how much airflow (400 CFM per ton)?`, t * 400, "CFM", `${t} x 400 = ${t * 400} CFM.`));
-
-export const GAMES: Partial<Record<StationKind, GameDef>> = {
-  wiring: {
-    type: "match",
-    title: "WIRING BENCH",
-    prompt: "Match each wire to its terminal. Tap a wire, then a terminal.",
-    pairs: [["Red wire", "24V power (R)"], ["Blue wire", "Common (C)"], ["Green wire", "Ground"], ["White wire", "Neutral"]],
-  },
-  gauges: {
-    type: "match",
-    title: "GAUGE MANIFOLD",
-    prompt: "Match each gauge part to what it does.",
-    pairs: [["Blue gauge", "Low side"], ["Red gauge", "High side"], ["Yellow hose", "Charging line"], ["Suction line", "Larger, cooler line"]],
-  },
-  thermostat: {
-    type: "match",
-    title: "THERMOSTAT WIRING",
-    prompt: "Match each thermostat terminal to its function.",
-    pairs: [["R", "24V power"], ["W", "Heat call"], ["Y", "Cooling call"], ["G", "Fan call"]],
-  },
-  panel: {
-    type: "sequence",
-    title: "LOCKOUT / TAGOUT",
-    prompt: "Put the lockout steps in the right order.",
-    steps: ["Notify others", "Shut off the breaker", "Apply lock and tag", "Verify dead with a meter"],
-  },
-  furnace: {
-    type: "sequence",
-    title: "NO-HEAT DIAGNOSIS",
-    prompt: "Check things in the right order, simplest first.",
-    steps: ["Check power", "Check thermostat call", "Check ignition", "Check gas valve"],
-  },
-  workorder: {
-    type: "sequence",
-    title: "SERVICE CALL",
-    prompt: "Order the steps of a good service call.",
-    steps: ["Hear the complaint", "Check power", "Check controls", "Check the load", "Document the repair"],
-  },
-  compressor: {
-    type: "sequence",
-    title: "REFRIGERATION CYCLE",
-    prompt: "Follow the refrigerant: start at the compressor.",
-    steps: ["Compressor", "Condenser", "Metering device", "Evaporator"],
-  },
-  recovery: {
-    type: "sequence",
-    title: "REFRIGERANT RECOVERY",
-    prompt: "Order the recovery steps.",
-    steps: ["Connect hoses", "Purge the hoses", "Start recovery", "Close valves and weigh cylinder"],
-  },
-  meter: { type: "quiz", title: "MULTIMETER: OHM'S LAW", make: meterQuiz },
-  parts: { type: "quiz", title: "CAPACITOR TEST", make: capacitorQuiz },
-  coil: { type: "quiz", title: "SUPERHEAT CHECK", make: superheatQuiz },
-  airflow: { type: "quiz", title: "AIRFLOW (CFM)", make: cfmQuiz },
-};
 
 export const stationKey = (lesson: number, lab: string, id: string) => `${lesson}:${lab}:${id}`;
 

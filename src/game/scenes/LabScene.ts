@@ -1,11 +1,11 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
-import { GAMES, consumedParts, labGreeting, missingItemLines, redirectLines, REQUIRED_ITEMS, focusFor, planFor, stationKey, INSTRUCTOR } from "@/game/data/labGames";
+import { consumedParts, labGreeting, missingItemLines, redirectLines, REQUIRED_ITEMS, focusFor, planFor, stationKey, INSTRUCTOR } from "@/game/data/labGames";
 import { LAB_LAYOUTS, type LabLayout, type Station } from "@/game/data/labLayouts";
 import { BUILDINGS } from "./CampusScene";
 import { DialogueBox } from "./DialogueBox";
-import { QuizBox } from "./QuizBox";
-import { MiniGame } from "./MiniGame";
+import { SCENARIOS } from "@/game/data/scenarios";
+import { DiagnoseGame } from "./DiagnoseGame";
 import { CribBox } from "./CribBox";
 import { addVignette, dropShadow, hudBar } from "./fx";
 
@@ -19,8 +19,8 @@ export class LabScene extends Phaser.Scene {
   private shadow!: Phaser.GameObjects.Ellipse;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private dialogue!: DialogueBox;
-  private quiz!: QuizBox;
-  private mini!: MiniGame;
+  
+  private mini!: DiagnoseGame;
   private crib!: CribBox;
   private inside = new Set<string>();
   private toast!: Phaser.GameObjects.Text;
@@ -76,8 +76,7 @@ export class LabScene extends Phaser.Scene {
     this.physics.add.collider(this.player, solid);
 
     this.dialogue = new DialogueBox(this);
-    this.quiz = new QuizBox(this);
-    this.mini = new MiniGame(this);
+    this.mini = new DiagnoseGame(this);
     this.crib = new CribBox(this);
     this.toast = this.add
       .text(320, 350, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
@@ -145,7 +144,7 @@ export class LabScene extends Phaser.Scene {
   }
 
   private get overlay() {
-    return this.quiz.active || this.mini.active || this.crib.active;
+    return this.mini.active || this.crib.active;
   }
 
   private say(text: string, onDone: () => void = () => {}) {
@@ -188,12 +187,10 @@ export class LabScene extends Phaser.Scene {
   }
 
   private playGame(s: Station, lesson: number) {
-    const def = GAMES[s.kind];
-    if (!def) return;
-    const done = (stars: number) => this.completeStation(s, lesson, Math.max(1, stars));
-    if (def.type === "sequence") this.mini.startSequence(def.title, def.prompt, def.steps, (m) => done(3 - m));
-    else if (def.type === "match") this.mini.startMatch(def.title, def.prompt, def.pairs, (m) => done(3 - m));
-    else this.quiz.start(def.make(), (correct) => done(correct), def.title);
+    const make = SCENARIOS[s.kind];
+    if (!make) return;
+    const belt = useGameStore.getState().active?.checkedOut ?? [];
+    this.mini.start(make(), belt, (m) => this.completeStation(s, lesson, Math.max(1, 3 - m)));
   }
 
   private completeStation(s: Station, lesson: number, stars: number) {
