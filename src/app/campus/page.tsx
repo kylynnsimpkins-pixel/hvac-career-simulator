@@ -1,5 +1,6 @@
 "use client";
 
+import GameCanvas from "@/components/GameCanvas";
 import { useGameStore, type Reward } from "@/store/gameStore";
 
 const ACTIVITIES: { label: string; labId?: string; reward: Reward }[] = [
@@ -15,10 +16,11 @@ export default function CampusPage() {
   return (
     <section>
       <h1 className="mb-4 text-2xl font-bold">Campus</h1>
+      <GameCanvas />
       {!active ? (
         <p>Create or load a profile first.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="mt-4 space-y-2">
           {ACTIVITIES.map((a) => (
             <li key={a.label}>
               <button
