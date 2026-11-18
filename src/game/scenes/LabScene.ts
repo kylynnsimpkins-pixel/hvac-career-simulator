@@ -61,7 +61,7 @@ export class LabScene extends Phaser.Scene {
       block(s.x, s.y, s.w, BENCH_H);
     });
 
-    this.add.image(420, 300, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(300);
+    this.add.image(420, 300, "teacher").setScale(CHAR_SCALE).setOrigin(0.5, 1).setDepth(300);
     dropShadow(this, 420, 298, 26, 8, 299);
     block(420, 290, 22, 12);
 

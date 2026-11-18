@@ -7,6 +7,8 @@ import type { Reward } from "@/store/gameStore";
 import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { QuizBox } from "./QuizBox";
+import { ChoiceBox } from "./ChoiceBox";
+import { MAX_QUESTIONS, QUESTIONS, ROUTES, clueCount, routeOf } from "@/game/data/interview";
 import { doorMat, floorLamp, floorMat, furnitureBody, hvacUnit, picture, plant, sign, stairsArt, windowPane } from "./decor";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
@@ -49,6 +51,7 @@ export class JobsiteScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private dialogue!: DialogueBox;
   private quiz!: QuizBox;
+  private choice!: ChoiceBox;
   private mini!: DiagnoseGame;
   private toast!: Phaser.GameObjects.Text;
   private site!: Site;
@@ -97,6 +100,11 @@ export class JobsiteScene extends Phaser.Scene {
       hvacUnit(this, u.x, u.y);
       this.add.text(u.x, u.y - 42, u.label, { fontFamily: FONT, fontSize: "11px", color: "#fde047", backgroundColor: "#000000aa", padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(9000);
       block(u.x, u.y, 90, 60);
+      const cx = Math.min(600, u.x + 75);
+      const cy = Math.min(440, u.y + 55);
+      this.add.ellipse(cx, cy - 2, 18, 7, 0x000000, 0.35).setDepth(cy - 1);
+      this.add.image(cx, cy, "customer").setOrigin(0.5, 1).setScale(CHAR_SCALE).setDepth(cy);
+      this.add.text(cx, cy - 32, this.site.kind === "Residential" ? "Homeowner" : "Owner", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
     }
 
     const stairs = (x: number, y: number, label: string, up: boolean) => {
@@ -124,6 +132,7 @@ export class JobsiteScene extends Phaser.Scene {
 
     this.dialogue = new DialogueBox(this);
     this.quiz = new QuizBox(this);
+    this.choice = new ChoiceBox(this);
     this.mini = new DiagnoseGame(this);
     this.toast = this.add
       .text(320, 350, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
@@ -135,7 +144,7 @@ export class JobsiteScene extends Phaser.Scene {
     this.input.keyboard!.on("keydown-SPACE", () => this.dialogue.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.dialogue.advance());
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (this.quiz.active || this.mini.active) return;
+      if (this.quiz.active || this.mini.active || this.choice.active) return;
       if (this.dialogue.active) this.dialogue.advance();
       else this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
@@ -264,7 +273,7 @@ export class JobsiteScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0);
 
-    const ui = this.dialogue.active || this.quiz.active || this.mini.active;
+    const ui = this.dialogue.active || this.quiz.active || this.mini.active || this.choice.active;
     if (this.busy && !ui) {
       this.busy = false;
       this.cooldownUntil = this.time.now + 4000;
@@ -328,20 +337,81 @@ export class JobsiteScene extends Phaser.Scene {
     this.dialogue.start(
       [
         { speaker: "Work order", text: this.round === 1 ? this.site.complaint : `${COMPLAINTS[this.round - 1]} (Call ${this.round} of ${ROUNDS})` },
-        { speaker: "You", text: `You made it up to the ${unit.label}. Pull the right tools and parts off your belt and diagnose it.` },
+        { speaker: this.owner(), text: "Thanks for coming. Ask me whatever you need to know about it." },
       ],
-      () => this.startRepair(),
+      () => this.askQuestions([], []),
+    );
+  }
+
+  private owner() {
+    return this.site.kind === "Residential" ? "Homeowner" : "Business owner";
+  }
+
+  /** The tech interviews the customer; the questions asked shape the route taken for the repair. */
+  private askQuestions(asked: number[], log: string[]) {
+    if (asked.length >= MAX_QUESTIONS) {
+      this.chooseRoute(asked);
+      return;
+    }
+    const open = QUESTIONS.map((q, i) => i).filter((i) => !asked.includes(i));
+    this.choice.start(
+      `TALK TO THE ${this.owner().toUpperCase()}  -  ${MAX_QUESTIONS - asked.length} question${MAX_QUESTIONS - asked.length === 1 ? "" : "s"} left`,
+      "Pick what to ask. The answers point you toward where the problem really is.",
+      open.map((i) => QUESTIONS[i].ask),
+      (n) => {
+        const i = open[n];
+        const q = QUESTIONS[i];
+        const truth = routeOf(scenarioFor(this.site, this.round));
+        const answer = q.generic ?? q.answers![truth];
+        this.dialogue.start(
+          [
+            { speaker: "You", text: q.ask },
+            { speaker: this.owner(), text: answer },
+          ],
+          () => this.askQuestions([...asked, i], [...log, answer]),
+        );
+      },
+    );
+  }
+
+  private chooseRoute(asked: number[]) {
+    this.choice.start(
+      "DECIDE YOUR APPROACH",
+      "Based on what you heard, where will you start your diagnosis?",
+      ROUTES.map((r) => r.label),
+      (n) => {
+        const kind = scenarioFor(this.site, this.round);
+        const truth = routeOf(kind);
+        const chosen = ROUTES[n].id;
+        const clues = clueCount(asked);
+        const label = ROUTES[n].id;
+        if (chosen === truth) {
+          this.dialogue.start(
+            [{ speaker: "You", text: clues >= 2 ? `The answers add up. Starting with ${label}.` : `Not much to go on, but I will start with ${label}.` }],
+            () => this.startRepair(clues >= 2 ? 0 : 1),
+          );
+        } else {
+          this.dialogue.start(
+            [
+              { speaker: "You", text: `Starting with ${label}...` },
+              { speaker: "You", text: `Everything on the ${label} side checks out fine. That cost half an hour. The real problem is somewhere else.` },
+              { speaker: this.owner(), text: "Is this taking longer than it should?" },
+            ],
+            () => this.startRepair(clues >= 2 ? 1 : 2),
+          );
+        }
+      },
     );
   }
 
   private round = 1;
 
-  private startRepair() {
+  private startRepair(penalty = 0) {
     const kind = scenarioFor(this.site, this.round);
     const make = SCENARIOS[kind];
     if (!make) return;
     const belt = [...new Set([...(REQUIRED_ITEMS[kind] ?? []), "Multimeter", "Screwdriver set"])];
-    this.mini.start(make(), belt, (mistakes) => this.followUp(Math.max(1, 3 - mistakes)));
+    this.mini.start(make(), belt, (mistakes) => this.followUp(Math.max(1, 3 - mistakes - penalty)));
   }
 
   /** The customer checks the work and asks a follow-up question once the repair is finished. */

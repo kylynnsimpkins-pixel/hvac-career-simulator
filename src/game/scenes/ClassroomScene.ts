@@ -56,7 +56,7 @@ export class ClassroomScene extends Phaser.Scene {
     };
 
     // Teacher and desk.
-    this.add.image(320, 184, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(166);
+    this.add.image(320, 184, "teacher").setScale(CHAR_SCALE).setOrigin(0.5, 1).setDepth(166);
     teacherDesk(this, 320, 198);
     block(320, 194, 116, 26);
     this.marker = this.add.text(320, 142, "!", { fontFamily: FONT, fontSize: "18px", color: "#fde047", fontStyle: "bold" }).setOrigin(0.5).setDepth(9000);

@@ -104,7 +104,7 @@ export class CampusScene extends Phaser.Scene {
     this.drawVan();
     this.drawTestCenter();
     this.buildDialogueBox();
-    this.add.image(150, 196, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(196);
+    this.add.image(150, 196, "teacher").setScale(CHAR_SCALE).setOrigin(0.5, 1).setDepth(196);
 
     this.input.keyboard!.on("keydown-SPACE", () => this.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.advance());

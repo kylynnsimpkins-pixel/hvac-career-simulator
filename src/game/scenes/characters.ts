@@ -4,7 +4,7 @@ import { buildLook, DEFAULT_WARDROBE, type Wardrobe } from "@/game/data/wardrobe
 
 /** Character textures are drawn at 2x (32x48) and displayed at scale CHAR_SCALE. */
 export const CHAR_SCALE = 0.5;
-export const CHAR_BODY = { w: 28, h: 20, ox: 2, oy: 44 };
+export const CHAR_BODY = { w: 28, h: 20, ox: 2, oy: 28 };
 
 function paint(scene: Phaser.Scene, key: string, look: Look, frame: number) {
   if (scene.textures.exists(key)) scene.textures.remove(key);
@@ -19,6 +19,7 @@ export function makeCharacterTextures(scene: Phaser.Scene, wardrobe: Wardrobe = 
   paint(scene, "player-0", player, 0);
   paint(scene, "player-1", player, 1);
   paint(scene, "teacher", { shirt: 0xf5f5f5, pants: 0x3a3a3a, skin: 0x8d5524, hair: 0x2a1a10, dreads: true, shoes: 0x2b1d14, tie: 0xb02a2a, glasses: true }, 0);
+  paint(scene, "customer", { shirt: 0x6b8fd6, pants: 0x4b5563, skin: 0xe0ac8a, hair: 0x6b4a2b, shoes: 0x3b2a1a }, 0);
   paint(scene, "technician-npc", { shirt: 0x2f855a, pants: 0x374151, skin: 0xd9a066, hat: 0xf97316, belt: true }, 0);
 }
 
