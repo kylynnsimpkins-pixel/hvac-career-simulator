@@ -17,6 +17,7 @@ export class DiagnoseGame {
   private dyn: Phaser.GameObjects.GameObject[] = [];
   private beltBtns = new Map<string, Btn>();
   private compBtns = new Map<string, Btn>();
+  private choiceBtns: Btn[] = [];
   private running = false;
   private solved = false;
   private mistakes = 0;
@@ -65,13 +66,30 @@ export class DiagnoseGame {
     this.selected = LOOK;
     this.running = true;
     this.title.setText(sc.title);
-    this.symptom.setText(`Problem: ${sc.symptom}\nPick from your toolbelt, then tap the equipment.`);
+    this.symptom.setText(`Problem: ${sc.symptom}\nDrag tools and parts from the belt onto the equipment.`);
     this.readout.setText("");
     this.box.setVisible(true);
 
     [LOOK, ...belt].forEach((name, i) => {
-      const b = this.button(450, 168 + i * 23, 160, name, 11, 3, () => this.select(name));
+      const home = { x: 450, y: 168 + i * 23 };
+      const b = this.button(home.x, home.y, 160, name, 11, 3, () => this.select(name));
       this.beltBtns.set(name, b);
+      this.scene.input.setDraggable(b);
+      b.on("dragstart", () => {
+        this.select(name);
+        this.box.bringToTop(b);
+      });
+      b.on("drag", (p: Phaser.Input.Pointer) => {
+        b.setPosition(p.worldX - 80, p.worldY - 9);
+        const over = this.compAt(p.worldX, p.worldY);
+        this.compBtns.forEach((cb, cid) => cb.setBackgroundColor(cid === over ? "#b7791f" : this.tested.has(cid) ? "#2c5282" : BTN));
+      });
+      b.on("dragend", (p: Phaser.Input.Pointer) => {
+        const over = this.compAt(p.worldX, p.worldY);
+        b.setPosition(home.x, home.y);
+        this.compBtns.forEach((cb, cid) => cb.setBackgroundColor(this.tested.has(cid) ? "#2c5282" : BTN));
+        if (over) this.use(over);
+      });
     });
     this.select(LOOK);
 
@@ -79,6 +97,11 @@ export class DiagnoseGame {
       const b = this.button(40 + (i % 2) * 205, 190 + Math.floor(i / 2) * 48, 195, c.name, 12, 12, () => this.use(c.id));
       this.compBtns.set(c.id, b);
     });
+  }
+
+  private compAt(x: number, y: number) {
+    for (const [id, b] of this.compBtns) if (b.getBounds().contains(x, y)) return id;
+    return null;
   }
 
   private select(name: string) {
@@ -91,6 +114,7 @@ export class DiagnoseGame {
     this.onDone = null;
     this.dyn.forEach((o) => o.destroy());
     this.dyn = [];
+    this.choiceBtns = [];
     this.beltBtns.clear();
     this.compBtns.clear();
     this.box.setVisible(false);
@@ -142,8 +166,30 @@ export class DiagnoseGame {
   }
 
   private solve(name: string, lucky: boolean) {
+    const sc = this.sc!;
     this.solved = true;
-    this.readout.setText(`FIXED! ${this.sc!.fix} on the ${name}.\n${this.sc!.done}${lucky ? "\nLucky guess! Measure or inspect first next time." : ""}\nMistakes: ${this.mistakes}`);
+    this.readout.setText(`Placed: ${sc.fix} on the ${name}.${lucky ? " (A lucky guess: measure or inspect first next time.)" : ""}`);
+    const quiz = sc.quiz;
+    this.symptom.setText(`Question: ${quiz.q}`);
+    const choices = quiz.choices.map((text, i) => ({ text, i })).sort(() => Math.random() - 0.5);
+    choices.forEach((c, n) => {
+      const b = this.button(40, 318 + n * 28, 400, c.text, 11, 5, () => {
+        if (c.i === quiz.answer) {
+          this.finish(sc.done);
+        } else {
+          this.mistakes++;
+          this.readout.setText(`Not quite, try again. (mistakes: ${this.mistakes})`);
+          b.setBackgroundColor("#c53030");
+        }
+      });
+      this.choiceBtns.push(b);
+    });
+  }
+
+  private finish(explain: string) {
+    this.choiceBtns.forEach((b) => b.destroy());
+    this.choiceBtns = [];
+    this.readout.setText(`Correct! ${explain}\nMistakes: ${this.mistakes}`);
     this.button(40, 408, 120, "[ Continue ]", 12, 6, () => {
       const done = this.onDone;
       const m = this.mistakes;

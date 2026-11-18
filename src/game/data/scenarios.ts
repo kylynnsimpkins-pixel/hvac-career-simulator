@@ -7,6 +7,12 @@ export interface Comp {
   tests: Record<string, string>;
 }
 
+export interface Quiz {
+  q: string;
+  choices: string[];
+  answer: number;
+}
+
 export interface Scenario {
   title: string;
   symptom: string;
@@ -14,14 +20,17 @@ export interface Scenario {
   fault: string;
   fix: string;
   done: string;
+  quiz: Quiz;
 }
+
+type Base = Omit<Scenario, "quiz">;
 
 const rnd = (a: number, b: number) => Math.floor(Math.random() * (b - a + 1)) + a;
 const comp = (id: string, name: string, look: string, tests: Record<string, string> = {}): Comp => ({ id, name, look, tests });
-const shuffled = (sc: Scenario): Scenario => ({ ...sc, comps: [...sc.comps].sort(() => Math.random() - 0.5) });
+const shuffled = (sc: Base): Base => ({ ...sc, comps: [...sc.comps].sort(() => Math.random() - 0.5) });
 
 /** Tools each scenario needs on the belt: measuring tools plus the fix item. */
-export const SCENARIOS: Partial<Record<StationKind, () => Scenario>> = {
+const BASE: Partial<Record<StationKind, () => Base>> = {
   meter: () =>
     shuffled({
       title: "NO-START: FOLLOW THE VOLTAGE",
@@ -191,3 +200,22 @@ export const SCENARIOS: Partial<Record<StationKind, () => Scenario>> = {
       done: "Never vent refrigerant. The gauges show it is charged, so recover it into a cylinder first.",
     }),
 };
+
+const QUESTIONS: Partial<Record<StationKind, Quiz>> = {
+  meter: { q: "The primary shows 240 V but the thermostat wire has no continuity. Where is the fault?", choices: ["In the open control wire", "In the transformer primary", "At the disconnect"], answer: 0 },
+  parts: { q: "A 40 uF capacitor reads about 26 uF. What is the verdict?", choices: ["Weak, replace it", "Good, within tolerance", "Shorted to ground"], answer: 0 },
+  airflow: { q: "How much airflow does a 3-ton system need (400 CFM per ton)?", choices: ["1200 CFM", "800 CFM", "400 CFM"], answer: 0 },
+  wiring: { q: "Which thermostat wire carries 24 V common?", choices: ["Blue (C)", "Red (R)", "Green (G)"], answer: 0 },
+  thermostat: { q: "Which terminal sends the cooling call?", choices: ["Y", "W", "G"], answer: 0 },
+  panel: { q: "What do you do right after locking out the breaker?", choices: ["Verify dead with a meter", "Start the repair", "Remove the lock"], answer: 0 },
+  furnace: { q: "When a furnace has no heat, what do you check first?", choices: ["Power and the simple controls", "Replace the gas valve", "Replace the board"], answer: 0 },
+  workorder: { q: "What causes a voltage drop and heat at a loose lug?", choices: ["High resistance at the connection", "Too much refrigerant", "A dirty filter"], answer: 0 },
+  compressor: { q: "Equal high and low pressures with a humming compressor means what?", choices: ["It is not starting or pumping", "The charge is perfect", "The coil is clean"], answer: 0 },
+  gauges: { q: "Low suction pressure with a frosting coil most often points to what?", choices: ["Restricted airflow", "Overcharge", "A good system"], answer: 0 },
+  coil: { q: "Superheat is very low and the coil is icing. What is likely?", choices: ["Not enough airflow across the coil", "Too much heat load", "Overheated compressor"], answer: 0 },
+  recovery: { q: "What must you do with refrigerant before opening a charged system?", choices: ["Recover it into a cylinder", "Vent it outside", "Leave it and cut the line"], answer: 0 },
+};
+
+export const SCENARIOS: Partial<Record<StationKind, () => Scenario>> = Object.fromEntries(
+  (Object.keys(BASE) as StationKind[]).map((k) => [k, () => ({ ...BASE[k]!(), quiz: QUESTIONS[k]! })]),
+);
