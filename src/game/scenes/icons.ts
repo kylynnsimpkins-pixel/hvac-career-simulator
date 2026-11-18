@@ -291,6 +291,7 @@ export function iconKey(scene: Phaser.Scene, name: string): string {
     ICONS[kind](g, color);
     g.generateTexture(key, 32, 32);
     g.destroy();
+    scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
   return key;
 }

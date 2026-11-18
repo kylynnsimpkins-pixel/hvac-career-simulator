@@ -73,7 +73,7 @@ export class ClassroomScene extends Phaser.Scene {
     );
 
     this.makePlayer();
-    hudBar(this, "Classroom 101  -  talk to Mr. Rivera at the front, exit by the bottom door");
+    hudBar(this, "Classroom 101  -  talk to Mr. Simpkins at the front, exit by the bottom door");
     addVignette(this);
 
     this.shadow = this.add.ellipse(320, 440, 18, 7, 0x000000, 0.35);
@@ -159,8 +159,8 @@ export class ClassroomScene extends Phaser.Scene {
         this.classEnded = true;
         this.dialogue.start(
           [
-            { speaker: "Mr. Rivera", text: `You got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
-            { speaker: "Mr. Rivera", text: `Today you earn +${reward.xp} XP and +${reward.graduationPoints} Graduation points.` },
+            { speaker: "Mr. Simpkins", text: `You got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
+            { speaker: "Mr. Simpkins", text: `Today you earn +${reward.xp} XP and +${reward.graduationPoints} Graduation points.` },
           ],
           () => this.showToast(`Class complete: +${reward.xp} XP, +${reward.graduationPoints} Graduation`),
         );

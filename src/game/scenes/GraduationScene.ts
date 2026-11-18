@@ -79,10 +79,10 @@ export class GraduationScene extends Phaser.Scene {
         this.confetti();
         this.dialogue.start(
           [
-            { speaker: "Mr. Rivera", text: `Ladies and gentlemen, ${a.playerName} has earned the HVAC Program diploma!` },
-            { speaker: "Mr. Rivera", text: "You have put in the hours, passed the labs and diagnosed the broken equipment. We are proud of you." },
-            { speaker: "Mr. Rivera", text: "Your next step is the EPA 608 certification. You cannot buy refrigerant or work on most systems without it." },
-            { speaker: "Mr. Rivera", text: "Visit the EPA 608 Test Center on campus when you are ready, or take it right now." },
+            { speaker: "Mr. Simpkins", text: `Ladies and gentlemen, ${a.playerName} has earned the HVAC Program diploma!` },
+            { speaker: "Mr. Simpkins", text: "You have put in the hours, passed the labs and diagnosed the broken equipment. We are proud of you." },
+            { speaker: "Mr. Simpkins", text: "Your next step is the EPA 608 certification. You cannot buy refrigerant or work on most systems without it." },
+            { speaker: "Mr. Simpkins", text: "Visit the EPA 608 Test Center on campus when you are ready, or take it right now." },
           ],
           () => this.choose(),
         );

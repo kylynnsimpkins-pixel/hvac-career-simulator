@@ -42,6 +42,7 @@ interface Look {
   pants: number;
   skin: number;
   hair?: number;
+  dreads?: boolean;
   hat?: number;
   tie?: number;
   glasses?: boolean;
@@ -142,6 +143,19 @@ function drawPerson(ctx: Ctx, look: Look, frame: number) {
     ctx.lineTo(7.6, 12);
     ctx.closePath();
     fillShape(ctx, grad(ctx, 0, 2, 0, 12, mix(look.hair, 15), css(look.hair)));
+    if (look.dreads) {
+      ctx.lineCap = "round";
+      for (let i = 0; i < 9; i++) {
+        const x = 8.6 + i * 1.85;
+        const len = i < 2 || i > 6 ? 15 : 8;
+        ctx.strokeStyle = i % 2 ? css(look.hair) : mix(look.hair, 14);
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.moveTo(x, 5);
+        ctx.lineTo(x + (i < 4 ? -1.2 : i > 4 ? 1.2 : 0), 5 + len);
+        ctx.stroke();
+      }
+    }
   }
   if (look.hat !== undefined) {
     ctx.beginPath();
@@ -167,7 +181,7 @@ export function makeCharacterTextures(scene: Phaser.Scene, shirt: number) {
   const player: Look = { shirt, pants: 0x2b3a67, skin: 0xf1c27d, hat: 0xffd400, belt: true };
   paint(scene, "player-0", player, 0);
   paint(scene, "player-1", player, 1);
-  paint(scene, "teacher", { shirt: 0xf5f5f5, pants: 0x3a3a3a, skin: 0xf1c27d, hair: 0xb8b8b8, tie: 0xb02a2a, glasses: true }, 0);
+  paint(scene, "teacher", { shirt: 0xf5f5f5, pants: 0x3a3a3a, skin: 0x8d5524, hair: 0x2a1a10, dreads: true, tie: 0xb02a2a, glasses: true }, 0);
   paint(scene, "technician-npc", { shirt: 0x2f855a, pants: 0x374151, skin: 0xd9a066, hat: 0xf97316, belt: true }, 0);
 }
 

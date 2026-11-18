@@ -64,7 +64,7 @@ export class JobsiteScene extends Phaser.Scene {
   }
 
   create(data: { site: string; level?: number; fromAbove?: boolean }) {
-    if (!this.textures.exists("player-0") || !this.textures.exists("teacher")) {
+    if (!this.textures.exists("player-0") || !this.textures.exists("teacher") || !useGameStore.getState().active?.graduated) {
       this.scene.start("CampusScene");
       return;
     }

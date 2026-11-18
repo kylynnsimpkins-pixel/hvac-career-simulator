@@ -65,14 +65,15 @@ export class DriveHomeScene extends Phaser.Scene {
 
   private showChoices() {
     const panel = this.add.rectangle(320, 424, 600, 90, 0x10162b, 0.95).setStrokeStyle(3, 0xfde047);
-    this.add.text(320, 392, "You pull into the driveway. Your phone buzzes: a service call.", { fontFamily: FONT, fontSize: "13px", color: "#ffffff" }).setOrigin(0.5);
+    this.add.text(320, 392, useGameStore.getState().active?.graduated ? "You pull into the driveway. Your phone buzzes: a service call." : "You pull into the driveway. Home sweet home. See you tomorrow!", { fontFamily: FONT, fontSize: "13px", color: "#ffffff" }).setOrigin(0.5);
     const btn = (x: number, label: string, color: string, go: () => void) =>
       this.add
         .text(x, 430, label, { fontFamily: FONT, fontSize: "13px", color: "#ffffff", backgroundColor: color, padding: { x: 10, y: 8 } })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", go);
-    btn(180, "Take a service call", "#2563eb", () => this.scene.start("JobMapScene"));
+    if (useGameStore.getState().active?.graduated) btn(180, "Take a service call", "#2563eb", () => this.scene.start("JobMapScene"));
+    else this.add.text(180, 430, "Service calls unlock\nafter graduation", { fontFamily: FONT, fontSize: "12px", color: "#94a3b8", align: "center" }).setOrigin(0.5);
     btn(430, "Rest up - back to campus", "#2f855a", () => this.scene.start("CampusScene"));
     panel.setDepth(0);
   }

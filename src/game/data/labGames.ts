@@ -2,7 +2,7 @@ import type { DialogueLine } from "./dialogue";
 import { HOMEWORK, LESSON_PLANS } from "./dialogue";
 import { LAB_LAYOUTS, type Station, type StationKind } from "./labLayouts";
 
-export const INSTRUCTOR = "Mr. Rivera";
+export const INSTRUCTOR = "Mr. Simpkins";
 
 export interface LessonFocus {
   kinds: StationKind[];

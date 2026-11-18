@@ -5,11 +5,11 @@ export interface DialogueLine {
   text: string;
 }
 
-const TEACHER = "Mr. Rivera";
+const TEACHER = "Mr. Simpkins";
 const say = (text: string): DialogueLine => ({ speaker: TEACHER, text });
 
 export const INTRO: DialogueLine[] = [
-  say("Welcome to HVAC Tech Academy, {name}! I'm Mr. Rivera, your lead instructor."),
+  say("Welcome to HVAC Tech Academy, {name}! I'm Mr. Simpkins, your lead instructor."),
   say("Heating, cooling and refrigeration keep homes, hospitals and grocery stores running. Good technicians are always in demand."),
   say("Here's how it works: walk through the campus and step on the yellow arrow at a building's door."),
   say("The Classroom is where we go over each day's lesson plan. The labs are where you get hands-on and earn XP, credits and cash."),

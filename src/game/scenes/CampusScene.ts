@@ -166,8 +166,10 @@ export class CampusScene extends Phaser.Scene {
 
     if (Phaser.Math.Distance.Between(this.player.x, this.player.y, 230, 440) < 40 && time > (this.cooldown.get("van") ?? 0)) {
       this.cooldown.set("van", time + 3000);
-      if (useGameStore.getState().active) this.scene.start("JobMapScene");
-      else this.showToast("Create a profile first");
+      const va = useGameStore.getState().active;
+      if (!va) this.showToast("Create a profile first");
+      else if (!va.graduated) this.showToast("Service calls are for graduates only: earn 1000 graduation points");
+      else this.scene.start("JobMapScene");
     }
 
     if (Phaser.Math.Distance.Between(this.player.x, this.player.y, 530, 452) < 36 && time > (this.cooldown.get("exam") ?? 0)) {
@@ -218,7 +220,7 @@ export class CampusScene extends Phaser.Scene {
     this.add.circle(206, 468, 7, 0x111111).setDepth(452);
     this.add.circle(254, 468, 7, 0x111111).setDepth(452);
     this.add.text(224, 450, "HVAC", { fontFamily: FONT, fontSize: "10px", color: "#1e3a8a", fontStyle: "bold" }).setOrigin(0.5).setDepth(453);
-    this.add.text(230, 420, "Service calls", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
+    this.add.text(230, 420, useGameStore.getState().active?.graduated ? "Service calls" : "Service calls (graduates only)", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
   }
 
   private enter(b: Building) {

@@ -16,6 +16,10 @@ export class JobMapScene extends Phaser.Scene {
       this.scene.start("CampusScene");
       return;
     }
+    if (!useGameStore.getState().active?.graduated) {
+      this.scene.start("CampusScene");
+      return;
+    }
     const done = useGameStore.getState().active?.completedQuests ?? [];
     this.add.rectangle(320, 240, 640, 480, 0x5fa55a);
     this.add.rectangle(320, 270, 640, 26, 0x555b66);

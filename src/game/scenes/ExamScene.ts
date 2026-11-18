@@ -63,7 +63,7 @@ export class ExamScene extends Phaser.Scene {
     this.add.rectangle(320, 255, 612, 424, 0xf8f4e3).setStrokeStyle(2, 0xb8a78a);
     this.add.rectangle(320, 56, 612, 38, 0x1a3a6b);
     this.header = this.add.text(18, 40, "U.S. EPA SECTION 608 TECHNICIAN CERTIFICATION", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", fontStyle: "bold" });
-    this.add.text(18, 58, `Candidate: ${a.playerName}   Proctor: Mr. Rivera   Pass mark: ${PASS_MARK * 100}% per section`, { fontFamily: FONT, fontSize: "9px", color: "#bcd0f5" });
+    this.add.text(18, 58, `Candidate: ${a.playerName}   Proctor: Mr. Simpkins   Pass mark: ${PASS_MARK * 100}% per section`, { fontFamily: FONT, fontSize: "9px", color: "#bcd0f5" });
     this.timer = this.add.text(622, 48, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", fontStyle: "bold" }).setOrigin(1, 0);
 
     this.sections.forEach((s, i) => {
