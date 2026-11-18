@@ -193,9 +193,15 @@ export class LabScene extends Phaser.Scene {
     const make = SCENARIOS[s.kind];
     if (!make) return;
     const belt = useGameStore.getState().active?.checkedOut ?? [];
-    const others = (Object.keys(SCENARIOS) as StationKind[]).filter((k) => k !== s.kind && (REQUIRED_ITEMS[k] ?? []).every((i) => belt.includes(i)));
-    const second = SCENARIOS[others[Math.floor(Math.random() * others.length)] ?? s.kind] ?? make;
-    // Each station is two back-to-back cases: the lesson's own fault, then a follow-up case using the same belt.
+    const ready = (k: StationKind) => k !== s.kind && !!SCENARIOS[k] && (REQUIRED_ITEMS[k] ?? []).every((i) => belt.includes(i));
+    const topics = focusFor(lesson).kinds;
+    // Rotate through every topic in the lesson so the day's games cover the whole plan.
+    const start = topics.indexOf(s.kind);
+    const rotated = topics.map((_, i) => topics[(start + 1 + i) % topics.length]);
+    const pool = rotated.filter(ready);
+    const fallback = (Object.keys(SCENARIOS) as StationKind[]).filter(ready);
+    const pick = pool[0] ?? fallback[Math.floor(Math.random() * fallback.length)] ?? s.kind;
+    const second = SCENARIOS[pick] ?? make;
     this.mini.start(make(), belt, (m1) => {
       this.say("Good work. Now a second case on the same equipment line. Keep your tools handy.");
       this.time.delayedCall(1800, () =>

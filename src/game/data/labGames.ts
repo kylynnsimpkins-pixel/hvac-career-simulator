@@ -16,7 +16,7 @@ export const LESSON_FOCUS: LessonFocus[] = [
   { kinds: ["wiring", "meter", "panel"], lab: "Electrical Lab" },
   { kinds: ["compressor", "gauges", "coil", "recovery"], lab: "Refrigeration Lab" },
   { kinds: ["meter", "parts"], lab: "Electrical Lab" },
-  { kinds: ["airflow"], lab: "Troubleshooting" },
+  { kinds: ["airflow", "meter", "thermostat"], lab: "Troubleshooting" },
   { kinds: ["workorder", "furnace", "thermostat", "meter"], lab: "Troubleshooting" },
 ];
 
