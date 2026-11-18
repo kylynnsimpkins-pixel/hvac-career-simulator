@@ -15,7 +15,7 @@ export default function CompanyBuilderPage() {
           <p>
             {canOpenCompany(active)
               ? "You can open your own HVAC company!"
-              : "Requires 10000 XP, 5000 credits, NATE, and $100,000 savings."}
+              : "Requires 6500 XP, 1000 credits, NATE, $3,000 savings and 8 hours of program time."}
           </p>
         </>
       ) : (

@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
+import { dayProgress, focusFor } from "@/game/data/labGames";
 import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
@@ -126,12 +127,18 @@ export class ClassroomScene extends Phaser.Scene {
     this.player.setDepth(this.player.y);
     this.shadow.setPosition(this.player.x, this.player.y - 2).setDepth(this.player.y - 1);
 
+    if (this.gated && Phaser.Math.Distance.Between(this.player.x, this.player.y, 320, 222) > 100) {
+      this.gated = false;
+      this.lessonDone = false;
+    }
     if (!this.lessonDone && Phaser.Math.Distance.Between(this.player.x, this.player.y, 320, 222) < 55) this.startLesson();
     if (this.player.y >= 472) {
       if (this.classEnded) this.scene.start("DriveHomeScene");
       else this.scene.start("CampusScene", { from: "Classroom" });
     }
   }
+
+  private gated = false;
 
   private startLesson() {
     const store = useGameStore.getState();
@@ -142,10 +149,20 @@ export class ClassroomScene extends Phaser.Scene {
     }
     this.lessonDone = true;
     const { playerName, lessonDay } = store.active;
+    if (lessonDay > 0) {
+      const p = dayProgress(store.active.stationsDone, lessonDay - 1);
+      if (p.done < p.need) {
+        this.dialogue.start(
+          [{ speaker: "Mr. Simpkins", text: `Finish yesterday's lab assignments first (${p.done}/${p.need} stations in the ${focusFor(lessonDay - 1).lab}). Then come back for the next lesson.` }],
+          () => { this.gated = true; },
+        );
+        return;
+      }
+    }
     this.dialogue.start(classroomLines(playerName, lessonDay), () => {
       const quiz = lessonContent(lessonDay).quiz;
       this.quiz.start(quiz, (correct) => {
-        const reward = quizReward(correct);
+        const reward = quizReward(correct, quiz.length);
         const s = useGameStore.getState();
         s.reward(reward);
         s.patch({ lessonDay: lessonDay + 1 });

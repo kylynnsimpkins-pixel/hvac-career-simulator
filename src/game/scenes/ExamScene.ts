@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
-import { EXAM_MINUTES, EXAM_SECTIONS, PASS_MARK, type ExamSection } from "@/game/data/epaExam";
-import { addCertification } from "@/game/systems/certificationSystem";
+import { EXAMS, passedSections, type CertSection as ExamSection, type ExamDef } from "@/game/data/certExams";
+import { addCertification, examRequirements, getCertification } from "@/game/systems/certificationSystem";
 import type { QuizQuestion } from "./QuizBox";
 
 const FONT = "monospace";
@@ -18,7 +18,8 @@ export class ExamScene extends Phaser.Scene {
   private sections: ExamSection[] = [];
   private answers: number[] = [];
   private index = 0;
-  private secondsLeft = EXAM_MINUTES * 60;
+  private exam: ExamDef = EXAMS[0];
+  private secondsLeft = 0;
   private submitted = false;
   private warned = false;
   private ui: Phaser.GameObjects.GameObject[] = [];
@@ -35,17 +36,62 @@ export class ExamScene extends Phaser.Scene {
     super("ExamScene");
   }
 
+  init(data: { exam?: string }) {
+    this.pending = data?.exam;
+  }
+
+  private pending?: string;
+
+  private showMenu() {
+    const a = useGameStore.getState().active!;
+    this.add.rectangle(320, 240, 640, 480, 0x3b2a1a);
+    this.add.rectangle(320, 245, 600, 440, 0xf8f4e3).setStrokeStyle(3, 0xb8a78a);
+    this.add.text(320, 44, "TESTING CENTER", { fontFamily: FONT, fontSize: "20px", color: "#1a3a6b", fontStyle: "bold" }).setOrigin(0.5);
+    this.add.text(320, 68, "Each certification has its own proctored exam.", { fontFamily: FONT, fontSize: "10px", color: "#475569" }).setOrigin(0.5);
+    EXAMS.forEach((e, i) => {
+      const y = 92 + i * 86;
+      const has = a.certifications.includes(getCertification(e.id).name);
+      const missing = has ? [] : examRequirements(a, e.id);
+      const done = passedSections(a, e.id);
+      this.add.rectangle(320, y + 34, 560, 78, 0xece5cf).setStrokeStyle(1, 0x7c6f55);
+      this.add.text(50, y + 6, e.title, { fontFamily: FONT, fontSize: "14px", color: "#111827", fontStyle: "bold" });
+      this.add.text(50, y + 26, `${e.issuer} | ${e.sections.length} sections | ${e.minutes} min | pass ${Math.round(e.passMark * 100)}% | +${e.xp} XP`, { fontFamily: FONT, fontSize: "9px", color: "#475569" });
+      const status = has ? "CERTIFIED" : missing.length ? missing.join("; ") : done.length ? `In progress: ${done.length}/${e.sections.length} sections passed` : "Available";
+      this.add.text(50, y + 44, status, { fontFamily: FONT, fontSize: "10px", color: has ? "#15803d" : missing.length ? "#b91c1c" : "#92400e", wordWrap: { width: 410 } });
+      if (!has && !missing.length) {
+        this.add
+          .text(560, y + 34, " Start ", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", backgroundColor: "#1a3a6b", padding: { x: 8, y: 6 } })
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+          .on("pointerdown", () => this.scene.restart({ exam: e.id }));
+      }
+    });
+    this.add
+      .text(320, 450, "  Return to campus  ", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", backgroundColor: "#2f855a", padding: { x: 12, y: 6 } })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.scene.start("CampusScene"));
+  }
+
   create() {
     const a = useGameStore.getState().active;
     if (!a || !a.graduated) {
       this.scene.start("CampusScene");
       return;
     }
-    this.sections = EXAM_SECTIONS.filter((s) => !a.epaSections.includes(s.id));
+    this.submitted = false;
+    this.timer = undefined as unknown as Phaser.GameObjects.Text;
+    const pick = EXAMS.find((e) => e.id === this.pending);
+    if (!pick) {
+      this.showMenu();
+      return;
+    }
+    this.exam = pick;
+    this.sections = pick.sections.filter((s) => !passedSections(a, pick.id).includes(s.id));
     this.items = this.sections.flatMap((section) => section.questions.map((q) => ({ section, q })));
     this.answers = this.items.map(() => -1);
     this.index = 0;
-    this.secondsLeft = EXAM_MINUTES * 60;
+    this.secondsLeft = pick.minutes * 60;
     this.submitted = false;
     this.warned = false;
     this.opts = [];
@@ -62,8 +108,8 @@ export class ExamScene extends Phaser.Scene {
     this.add.rectangle(322, 258, 612, 424, 0x000000, 0.3);
     this.add.rectangle(320, 255, 612, 424, 0xf8f4e3).setStrokeStyle(2, 0xb8a78a);
     this.add.rectangle(320, 56, 612, 38, 0x1a3a6b);
-    this.header = this.add.text(18, 40, "U.S. EPA SECTION 608 TECHNICIAN CERTIFICATION", { fontFamily: FONT, fontSize: "13px", color: "#ffffff", fontStyle: "bold" });
-    this.add.text(18, 58, `Candidate: ${a.playerName}   Proctor: Mr. Simpkins   Pass mark: ${PASS_MARK * 100}% per section`, { fontFamily: FONT, fontSize: "9px", color: "#bcd0f5" });
+    this.header = this.add.text(18, 40, this.exam.title.toUpperCase(), { fontFamily: FONT, fontSize: "13px", color: "#ffffff", fontStyle: "bold" });
+    this.add.text(18, 58, `Candidate: ${a.playerName}   Proctor: Mr. Simpkins   Pass mark: ${Math.round(this.exam.passMark * 100)}% per section`, { fontFamily: FONT, fontSize: "9px", color: "#bcd0f5" });
     this.timer = this.add.text(622, 48, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", fontStyle: "bold" }).setOrigin(1, 0);
 
     this.sections.forEach((s, i) => {
@@ -77,7 +123,7 @@ export class ExamScene extends Phaser.Scene {
       .text(622, 84, "[ Leave exam ]", { fontFamily: FONT, fontSize: "10px", color: "#b91c1c" })
       .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("CampusScene"));
+      .on("pointerdown", () => this.scene.start("ExamScene"));
 
     this.qText = this.add.text(24, 116, "", { fontFamily: FONT, fontSize: "14px", color: "#111827", wordWrap: { width: 590 }, lineSpacing: 3 });
     for (let i = 0; i < 4; i++) {
@@ -181,7 +227,7 @@ export class ExamScene extends Phaser.Scene {
     const rows = this.sections.map((s) => {
       const picks = this.items.map((it, i) => ({ it, a: this.answers[i] })).filter((x) => x.it.section.id === s.id);
       const score = picks.filter((x) => x.a === x.it.q.answer).length;
-      return { s, score, total: picks.length, pass: score / picks.length >= PASS_MARK };
+      return { s, score, total: picks.length, pass: score / picks.length >= this.exam.passMark };
     });
     rows.forEach((r, i) => {
       const y = 92 + i * 34;
@@ -189,39 +235,42 @@ export class ExamScene extends Phaser.Scene {
       this.add.text(560, y, r.pass ? "PASS" : "FAIL", { fontFamily: FONT, fontSize: "14px", color: r.pass ? "#15803d" : "#b91c1c", fontStyle: "bold" }).setOrigin(1, 0);
     });
 
-    const passed = [...new Set([...a.epaSections, ...rows.filter((r) => r.pass).map((r) => r.s.id)])];
-    const hadCert = a.certifications.includes("EPA 608");
-    const certified = passed.includes("core") && ["type1", "type2", "type3"].some((t) => passed.includes(t));
+    const ex = this.exam;
+    const passed = [...new Set([...passedSections(a, ex.id), ...rows.filter((r) => r.pass).map((r) => r.s.id)])];
+    const hadCert = a.certifications.includes(getCertification(ex.id).name);
+    const certified = ex.isCertified(passed);
+    const progress = ex.id === "epa608" ? { epaSections: passed } : { examPassed: [...(a.examPassed ?? []).filter((x) => !x.startsWith(`${ex.id}:`)), ...passed.map((p) => `${ex.id}:${p}`)] };
+    const save = (extra: object = {}) => useGameStore.getState().patch({ ...progress, ...extra });
     let message: string;
     if (certified) {
       const universal = ["type1", "type2", "type3"].every((t) => passed.includes(t));
       const types = ["type1", "type2", "type3"].filter((t) => passed.includes(t)).map((t) => t.replace("type", "Type "));
-      message = `CERTIFIED: EPA 608 ${universal ? "Universal" : types.join(" + ")}`;
+      message = `CERTIFIED: ${getCertification(ex.id).name}${ex.id === "epa608" ? ` ${universal ? "Universal" : types.join(" + ")}` : ""}`;
       if (!hadCert) {
-        store.reward({ xp: 150, graduationPoints: 0, skill: "safety", skillPoints: 3 });
-        message += "\n+150 XP, +3 Safety skill points";
+        store.reward({ xp: ex.xp, graduationPoints: 0, skill: "safety", skillPoints: 3 });
+        message += `\n+${ex.xp} XP, +3 Safety skill points`;
       }
       const s2 = useGameStore.getState();
-      s2.patch({ epaSections: passed, certifications: addCertification(s2.active!, "epa608") });
+      save({ certifications: addCertification(s2.active!, ex.id) });
       this.add.rectangle(320, 330, 440, 90, 0xfffbe6).setStrokeStyle(4, 0xb7791f);
       this.add.text(320, 330, `${message}\nCandidate: ${a.playerName}`, { fontFamily: FONT, fontSize: "14px", color: "#7c4a03", align: "center", fontStyle: "bold" }).setOrigin(0.5);
     } else {
-      store.patch({ epaSections: passed });
+      save();
       const missing = rows.filter((r) => !r.pass).map((r) => r.s.name).join(", ");
       this.add.text(320, 330, `Not certified yet. Retake: ${missing}.\nPassed sections are saved, so you only retake the rest.`, { fontFamily: FONT, fontSize: "13px", color: "#b91c1c", align: "center" }).setOrigin(0.5);
     }
     this.add
-      .text(320, 438, "  Return to campus  ", { fontFamily: FONT, fontSize: "14px", color: "#ffffff", backgroundColor: "#2f855a", padding: { x: 12, y: 8 } })
+      .text(320, 438, "  Back to Testing Center  ", { fontFamily: FONT, fontSize: "14px", color: "#ffffff", backgroundColor: "#2f855a", padding: { x: 12, y: 8 } })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.scene.start("CampusScene"));
+      .on("pointerdown", () => this.scene.start("ExamScene"));
   }
 
   private showDone(name: string) {
     this.add.rectangle(320, 240, 520, 220, 0xf8f4e3).setStrokeStyle(3, 0xb8a78a);
-    this.add.text(320, 210, `${name}, you have passed every section of the EPA 608 exam.\nYou are Universal certified!`, { fontFamily: FONT, fontSize: "14px", color: "#15803d", align: "center", fontStyle: "bold" }).setOrigin(0.5);
+    this.add.text(320, 210, `${name}, you have passed every section of the ${this.exam.title} exam.\nYou are certified!`, { fontFamily: FONT, fontSize: "14px", color: "#15803d", align: "center", fontStyle: "bold" }).setOrigin(0.5);
     this.add
-      .text(320, 290, "  Return to campus  ", { fontFamily: FONT, fontSize: "14px", color: "#ffffff", backgroundColor: "#2f855a", padding: { x: 12, y: 8 } })
+      .text(320, 290, "  Back to Testing Center  ", { fontFamily: FONT, fontSize: "14px", color: "#ffffff", backgroundColor: "#2f855a", padding: { x: 12, y: 8 } })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.scene.start("CampusScene"));

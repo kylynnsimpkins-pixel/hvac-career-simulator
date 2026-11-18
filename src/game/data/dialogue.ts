@@ -1,3 +1,4 @@
+import { MORE_CONTENT, MORE_HOMEWORK, MORE_PLANS } from "./curriculum";
 import type { QuizQuestion } from "@/game/scenes/QuizBox";
 
 export interface DialogueLine {
@@ -132,8 +133,9 @@ export const QUIZ_XP_BASE = 10;
 export const QUIZ_XP_PER_CORRECT = 10;
 export const QUIZ_GRAD_PER_CORRECT = 10;
 
-export function quizReward(correct: number) {
-  return { xp: QUIZ_XP_BASE + correct * QUIZ_XP_PER_CORRECT, graduationPoints: correct * QUIZ_GRAD_PER_CORRECT };
+export function quizReward(correct: number, total = 4) {
+  const f = total > 0 ? correct / total : 0;
+  return { xp: QUIZ_XP_BASE + Math.round(f * 40), graduationPoints: Math.round(f * 30) };
 }
 
 export function quizGrade(correct: number, total: number): string {
@@ -169,3 +171,7 @@ export const BRIEFINGS: Record<string, DialogueLine[]> = {
   "Refrigeration Lab": [say("Refrigeration Lab. Build the condenser loop and watch your pressures. Safety glasses on!")],
   Troubleshooting: [say("Troubleshooting Center. A customer has no cooling. Find the fault: power, controls, then the load.")],
 };
+
+LESSON_PLANS.push(...MORE_PLANS);
+HOMEWORK.push(...MORE_HOMEWORK);
+LESSON_CONTENT.push(...MORE_CONTENT);

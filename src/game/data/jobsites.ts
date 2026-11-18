@@ -247,4 +247,47 @@ export const SITES: Site[] = [
   },
 ];
 
-export const jobKey = (siteId: string) => `job:${siteId}`;
+export const ROUNDS = 3;
+
+/** Round 1 keeps the original key so existing saves stay valid. */
+export const jobKey = (siteId: string, round = 1) => (round <= 1 ? `job:${siteId}` : `job:${siteId}:${round}`);
+
+/** Number of finished service calls (0 to ROUNDS) at a site. */
+export const roundsDone = (done: string[], siteId: string) => {
+  let n = 0;
+  while (n < ROUNDS && done.includes(jobKey(siteId, n + 1))) n++;
+  return n;
+};
+
+const ROUND_KINDS: StationKind[] = ["furnace", "thermostat", "meter", "airflow", "gauges", "wiring", "panel", "coil", "compressor", "recovery"];
+
+/** Later rounds bring a different fault than the first call. */
+export function scenarioFor(site: Site, round: number): StationKind {
+  if (round <= 1) return site.scenario;
+  const i = SITES.indexOf(site);
+  return ROUND_KINDS[(i * 2 + round) % ROUND_KINDS.length];
+}
+
+export const COMPLAINTS = [
+  "",
+  "The customer called back with a new problem: the system is acting up again. Find out what is going on.",
+  "Urgent callback: the customer says it is worse this week. Diagnose it carefully.",
+];
+
+const fq = (q: string, choices: string[], answer: number, why: string): QuizQuestion => ({ q, choices, answer, why });
+
+export const FOLLOWUPS: QuizQuestion[] = [
+  fq("The customer asks how often to change a 1-inch filter. What do you say?", ["Every 1-3 months", "Every 5 years", "Never", "Only when broken"], 0, "Typical 1-inch filters need changing every 1 to 3 months."),
+  fq("The customer asks why the unit froze up. Most common reason?", ["Poor airflow or low charge", "Too clean a coil", "A new thermostat", "Cool weather only"], 0, "Low airflow or low charge drops coil temperature below freezing."),
+  fq("The customer wants to cut their bill. A good suggestion is...", ["Annual tune-up and a programmable thermostat", "Block the vents", "Run the fan on high all night", "Remove the filter"], 0, "Maintenance and smart setbacks reduce energy use."),
+  fq("The customer asks if it is safe to run the AC while it ices. You say...", ["Turn it off and let it thaw", "Keep running it", "Pour hot water on the compressor", "Close all vents"], 0, "Running an iced system can flood the compressor."),
+  fq("The customer notices a burning smell at first heat of the season. Likely cause?", ["Dust burning off the heat exchanger", "A gas leak", "Refrigerant", "A bad capacitor only"], 0, "Dust burn-off is common; a gas smell is different and needs evacuation."),
+  fq("Why should the customer keep the outdoor unit clear of plants?", ["Airflow across the condenser", "Looks", "Noise", "Sunlight"], 0, "Condensers need free airflow to reject heat."),
+  fq("What does SEER measure?", ["Seasonal cooling efficiency", "Gas pressure", "Duct size", "Voltage"], 0, "SEER is Seasonal Energy Efficiency Ratio."),
+  fq("The customer asks what a TXV does. You explain it...", ["Meters refrigerant to the evaporator", "Cleans air", "Reads amps", "Cools the compressor oil"], 0, "A thermostatic expansion valve meters refrigerant flow."),
+  fq("The customer hears water dripping inside. Check first...", ["The condensate drain", "The compressor", "The thermostat battery", "The gas valve"], 0, "A clogged condensate drain overflows."),
+  fq("The customer wants a CO detector recommendation. You say...", ["Install them near sleeping areas", "They are optional decoration", "Only in the attic", "Not needed with electric heat"], 0, "Place CO alarms outside bedrooms and on each level."),
+];
+
+export const followUpFor = (site: Site, round: number): QuizQuestion =>
+  round <= 1 ? site.question : FOLLOWUPS[(SITES.indexOf(site) * 2 + round) % FOLLOWUPS.length];

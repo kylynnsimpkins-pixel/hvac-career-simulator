@@ -1,9 +1,9 @@
 const LEVELS: [number, string][] = [
   [0, "Apprentice"],
-  [1000, "Junior Technician"],
-  [3000, "Technician"],
-  [6000, "Senior Technician"],
-  [10000, "Master Technician"],
+  [800, "Junior Technician"],
+  [2500, "Technician"],
+  [4500, "Senior Technician"],
+  [6500, "Master Technician"],
 ];
 
 export function levelTitle(xp: number): string {

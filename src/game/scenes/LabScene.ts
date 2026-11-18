@@ -200,7 +200,7 @@ export class LabScene extends Phaser.Scene {
     const store = useGameStore.getState();
     const a = store.active;
     if (!a) return;
-    const reward = { xp: 20 + stars * 15, graduationPoints: stars * 5, money: stars * 5 };
+    const reward = { xp: 20 + stars * 15, graduationPoints: stars * 3, money: stars * 5 };
     const used = consumedParts(s.kind);
     const stationsDone = [...a.stationsDone, stationKey(lesson, this.label, s.id)];
     store.reward(reward);

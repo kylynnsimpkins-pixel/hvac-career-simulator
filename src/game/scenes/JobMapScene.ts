@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
-import { SITES, jobKey } from "@/game/data/jobsites";
+import { ROUNDS, SITES, roundsDone } from "@/game/data/jobsites";
 import { addVignette, hudBar } from "./fx";
 
 const FONT = "monospace";
@@ -31,7 +31,8 @@ export class JobMapScene extends Phaser.Scene {
 
     SITES.forEach((s) => {
       const { x, y, w, h, wall, roof } = s.map;
-      const complete = done.includes(jobKey(s.id));
+      const n = roundsDone(done, s.id);
+      const complete = n >= ROUNDS;
       this.add.ellipse(x, y + h / 2 + 4, w + 10, 12, 0x000000, 0.2);
       this.add.rectangle(x, y, w, h, wall).setStrokeStyle(2, 0x333333);
       this.add.rectangle(x, y - h / 2 - 6, w + 10, 14, roof).setStrokeStyle(2, 0x333333);
@@ -40,7 +41,7 @@ export class JobMapScene extends Phaser.Scene {
       const hit = this.add.rectangle(x, y - 4, w + 12, h + 28, 0xffffff, 0.001).setInteractive({ useHandCursor: true });
       hit.on("pointerdown", () => this.scene.start("JobsiteScene", { site: s.id, level: 0 }));
       this.add
-        .text(x, y + h / 2 + 18, `${s.name}${complete ? " ✔" : ""}`, {
+        .text(x, y + h / 2 + 18, `${s.name} ${complete ? "✔" : `${n}/${ROUNDS}`}`, {
           fontFamily: FONT,
           fontSize: "11px",
           color: complete ? "#bbf7d0" : "#ffffff",

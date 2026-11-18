@@ -17,6 +17,10 @@ export interface SaveProfile extends Skills {
   seenIntro: boolean;
   graduationSeen: boolean;
   epaSections: string[];
+  /** Passed exam sections for non-EPA certs, stored as "certId:sectionId". */
+  examPassed: string[];
+  /** Active play time in seconds, used for the 8 hour program minimum. */
+  playSeconds: number;
   lessonDay: number;
   stationsDone: string[];
   checkedOut: string[];

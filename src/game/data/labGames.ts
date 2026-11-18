@@ -1,4 +1,5 @@
 import type { DialogueLine } from "./dialogue";
+import { MORE_FOCUS } from "./curriculum";
 import { HOMEWORK, LESSON_PLANS } from "./dialogue";
 import { LAB_LAYOUTS, type Station, type StationKind } from "./labLayouts";
 
@@ -17,6 +18,8 @@ export const LESSON_FOCUS: LessonFocus[] = [
   { kinds: ["airflow"], lab: "Troubleshooting" },
   { kinds: ["workorder", "furnace", "thermostat", "meter"], lab: "Troubleshooting" },
 ];
+
+LESSON_FOCUS.push(...MORE_FOCUS);
 
 export const focusFor = (lesson: number) => LESSON_FOCUS[lesson % LESSON_FOCUS.length];
 export const planFor = (lesson: number) => LESSON_PLANS[lesson % LESSON_PLANS.length];
@@ -61,6 +64,13 @@ export const REQUIRED_ITEMS: Partial<Record<StationKind, string[]>> = {
 export const consumedParts = (kind: StationKind) => (REQUIRED_ITEMS[kind] ?? []).filter(isPart);
 
 export const stationKey = (lesson: number, lab: string, id: string) => `${lesson}:${lab}:${id}`;
+
+/** Progress on one school day's lab assignments in its focus lab. */
+export function dayProgress(done: string[], lesson: number): { done: number; need: number } {
+  const focus = focusFor(lesson);
+  const list = LAB_LAYOUTS[focus.lab].stations.filter((s) => focus.kinds.includes(s.kind));
+  return { done: list.filter((s) => done.includes(stationKey(lesson, focus.lab, s.id))).length, need: list.length };
+}
 
 const relevantIn = (lab: string, kinds: StationKind[]) => LAB_LAYOUTS[lab].stations.filter((s) => kinds.includes(s.kind));
 

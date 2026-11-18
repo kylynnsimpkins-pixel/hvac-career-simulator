@@ -1,12 +1,10 @@
 import { create } from "zustand";
 import type { SaveProfile } from "@/types/saveProfile";
-import type { CertificationId } from "@/types/certification";
 import type { SkillName } from "@/types/player";
 import { TOPS, type Wardrobe } from "@/game/data/wardrobe";
 import { deleteAccount } from "@/game/systems/accountSystem";
 import { createProfile } from "@/game/systems/profileSystem";
 import { levelTitle } from "@/game/systems/xpSystem";
-import { addCertification, canEarn } from "@/game/systems/certificationSystem";
 import { shouldGraduate } from "@/game/systems/graduationSystem";
 import { canBuyTool, canUnlockSkill, isQuestComplete } from "@/game/systems/progressionSystem";
 import { QUESTS, SKILL_TREE, TOOLS } from "@/game/data/gameContent";
@@ -39,7 +37,7 @@ interface GameState {
   removeProfile: (name: string) => void;
   reward: (r: Reward) => void;
   completeLab: (labId: string, r: Reward) => void;
-  earnCertification: (id: CertificationId) => boolean;
+  addPlayTime: (seconds: number) => void;
   chooseCareer: (path: string) => void;
   submitPlacement: (score: number, xp: number) => void;
   patch: (changes: Partial<SaveProfile>) => void;
@@ -167,11 +165,12 @@ export const useGameStore = create<GameState>((set, get) => {
       });
     },
 
-    earnCertification: (id) => {
+    addPlayTime: (seconds) => {
       const a = get().active;
-      if (!a || !canEarn(a, id)) return false;
-      commit({ ...a, certifications: addCertification(a, id) });
-      return true;
+      if (!a) return;
+      const next = { ...a, playSeconds: (a.playSeconds ?? 0) + seconds };
+      saveGame(next);
+      set({ active: next });
     },
 
     patch: (changes) => {

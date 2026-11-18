@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
 import { SCENARIOS } from "@/game/data/scenarios";
 import { REQUIRED_ITEMS } from "@/game/data/labGames";
-import { SITES, jobKey, type Prop, type Site } from "@/game/data/jobsites";
+import { COMPLAINTS, ROUNDS, SITES, followUpFor, jobKey, roundsDone, scenarioFor, type Prop, type Site } from "@/game/data/jobsites";
 import type { Reward } from "@/store/gameStore";
 import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
@@ -318,25 +318,29 @@ export class JobsiteScene extends Phaser.Scene {
       return;
     }
     this.busy = true;
-    const key = jobKey(this.site.id);
     const unit = this.site.levels[this.levelIndex].unit!;
-    if (store.active.completedQuests.includes(key)) {
-      this.dialogue.start([{ speaker: "Customer", text: `The ${unit.label} is running great. Thanks for fixing it! Try another job.` }], () => undefined);
+    const finished = roundsDone(store.active.completedQuests, this.site.id);
+    if (finished >= ROUNDS) {
+      this.dialogue.start([{ speaker: "Customer", text: `The ${unit.label} is running great. Thanks for all your help! Try another job.` }], () => undefined);
       return;
     }
+    this.round = finished + 1;
     this.dialogue.start(
       [
-        { speaker: "Work order", text: this.site.complaint },
+        { speaker: "Work order", text: this.round === 1 ? this.site.complaint : `${COMPLAINTS[this.round - 1]} (Call ${this.round} of ${ROUNDS})` },
         { speaker: "You", text: `You made it up to the ${unit.label}. Pull the right tools and parts off your belt and diagnose it.` },
       ],
       () => this.startRepair(),
     );
   }
 
+  private round = 1;
+
   private startRepair() {
-    const make = SCENARIOS[this.site.scenario];
+    const kind = scenarioFor(this.site, this.round);
+    const make = SCENARIOS[kind];
     if (!make) return;
-    const belt = [...new Set([...(REQUIRED_ITEMS[this.site.scenario] ?? []), "Multimeter", "Screwdriver set"])];
+    const belt = [...new Set([...(REQUIRED_ITEMS[kind] ?? []), "Multimeter", "Screwdriver set"])];
     this.mini.start(make(), belt, (mistakes) => this.followUp(Math.max(1, 3 - mistakes)));
   }
 
@@ -349,13 +353,13 @@ export class JobsiteScene extends Phaser.Scene {
       ],
       () =>
         this.quiz.start(
-          [this.site.question],
+          [followUpFor(this.site, this.round)],
           (correct) => {
             const s = useGameStore.getState();
             if (correct > 0) {
               const r = scaled(this.site.reward, [0.6, 0.8, 1][stars - 1]);
               s.reward(r);
-              s.patch({ completedQuests: [...(s.active?.completedQuests ?? []), jobKey(this.site.id)] });
+              s.patch({ completedQuests: [...(s.active?.completedQuests ?? []), jobKey(this.site.id, this.round)] });
               this.showToast(`Job complete (${"★".repeat(stars)}): +${r.xp} XP, +$${r.money}`);
             } else {
               this.showToast("The customer wasn't satisfied. Review and try again.");
