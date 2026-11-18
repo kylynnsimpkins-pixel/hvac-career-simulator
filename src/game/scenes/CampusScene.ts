@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { useGameStore, type Reward } from "@/store/gameStore";
-import { BRIEFINGS, INTRO, classroomLines, type DialogueLine } from "@/game/data/dialogue";
+import { BRIEFINGS, INTRO, type DialogueLine } from "@/game/data/dialogue";
 
 interface Building {
   label: string;
@@ -13,7 +13,7 @@ interface Building {
   message: string;
 }
 
-const BUILDINGS: Building[] = [
+export const BUILDINGS: Building[] = [
   { label: "Classroom", x: 110, y: 100, wall: 0xd6c7a1, roof: 0x3b6fd4, reward: { xp: 25, graduationPoints: 25 }, message: "+25 XP, +25 Graduation" },
   { label: "Electrical Lab", x: 320, y: 100, wall: 0xcfcfcf, roof: 0xe0a800, labId: "wiring-lab", reward: { xp: 50, contractorCredits: 20, money: 40, skill: "electrical", skillPoints: 2 }, message: "+50 XP, +20 Credits, +$40" },
   { label: "Refrigeration Lab", x: 530, y: 100, wall: 0xbfd9e6, roof: 0x1aa3b8, labId: "refrigeration-lab", reward: { xp: 75, contractorCredits: 25, money: 40, skill: "mechanical", skillPoints: 2 }, message: "+75 XP, +25 Credits, +$40" },
@@ -51,7 +51,7 @@ export class CampusScene extends Phaser.Scene {
     super("CampusScene");
   }
 
-  create() {
+  create(data?: { from?: string }) {
     this.makeTextures();
     this.drawGround();
 
@@ -76,8 +76,10 @@ export class CampusScene extends Phaser.Scene {
 
     const color = useGameStore.getState().active?.avatarColor ?? "#38bdf8";
     this.makePlayerTextures(Phaser.Display.Color.HexStringToColor(color).color);
+    const from = BUILDINGS.find((b) => b.label === data?.from);
+    const spawn = from ? { x: from.x, y: from.y + DOOR_OFFSET + 50 } : { x: 320, y: 430 };
     this.shadow = this.add.ellipse(320, 446, 18, 7, 0x000000, 0.35);
-    this.player = this.physics.add.sprite(320, 430, "player-0").setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1);
     this.player.setCollideWorldBounds(true);
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setSize(14, 10).setOffset(1, 22);
@@ -162,14 +164,17 @@ export class CampusScene extends Phaser.Scene {
       this.showToast("Create a profile first");
       return;
     }
+    if (b.label === "Classroom") {
+      this.scene.start("ClassroomScene");
+      return;
+    }
     const finish = () => {
       if (b.labId) store.completeLab(b.labId, b.reward);
       else store.reward(b.reward);
-      if (b.label === "Classroom") useGameStore.getState().patch({ lessonDay: store.active!.lessonDay + 1 });
       this.cooldown.set(b.label, this.time.now + 3000);
       this.showToast(`${b.label}: ${b.message}`);
     };
-    const lines = b.label === "Classroom" ? classroomLines(store.active.playerName, store.active.lessonDay) : BRIEFINGS[b.label];
+    const lines = BRIEFINGS[b.label];
     if (lines) this.startDialogue(lines, finish);
     else finish();
   }
@@ -253,6 +258,7 @@ export class CampusScene extends Phaser.Scene {
   }
 
   private makeTextures() {
+    if (this.textures.exists("grass")) return;
     const g = this.make.graphics({ x: 0, y: 0 }, false);
     const gen = (key: string, w: number, h: number) => {
       g.generateTexture(key, w, h);

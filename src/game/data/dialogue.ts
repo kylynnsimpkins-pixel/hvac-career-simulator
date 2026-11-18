@@ -49,12 +49,22 @@ export const LESSON_PLANS: LessonPlan[] = [
   },
 ];
 
+export const HOMEWORK: string[][] = [
+  ["Worksheet: 5 Ohm's law problems", "Label a wiring diagram"],
+  ["Draw the refrigeration cycle", "Quiz: state changes"],
+  ["Lab report: meter readings", "Practice: read 3 meter scales"],
+  ["Calculate CFM for a 3-ton system", "Read: duct basics"],
+  ["Write a 5-step service checklist", "Case study: no-cool call"],
+];
+
 export function classroomLines(name: string, day: number): DialogueLine[] {
   const plan = LESSON_PLANS[day % LESSON_PLANS.length];
+  const homework = HOMEWORK[day % HOMEWORK.length];
   return [
     say(`Good morning, ${name}! Take a seat. This is day ${day + 1} of your training.`),
     say(`Today's lesson: ${plan.title}.`),
     ...plan.agenda.map((item, i) => say(`Plan item ${i + 1}: ${item}.`)),
+    say(`Assignments due next class: ${homework.join(" and ")}.`),
     say(`Tip of the day: ${plan.tip}`),
     say("That's the plan. Great work today. Now go put it to use in the labs!"),
   ];
