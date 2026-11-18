@@ -23,6 +23,7 @@ export class ClassroomScene extends Phaser.Scene {
   private lastPos = new Phaser.Math.Vector2();
   private frameTick = 0;
   private lessonDone = false;
+  private classEnded = false;
 
   constructor() {
     super("ClassroomScene");
@@ -30,6 +31,7 @@ export class ClassroomScene extends Phaser.Scene {
 
   create() {
     this.lessonDone = false;
+    this.classEnded = false;
     this.target = null;
     this.makeFloor();
     this.drawRoom();
@@ -128,7 +130,10 @@ export class ClassroomScene extends Phaser.Scene {
     this.shadow.setPosition(this.player.x, this.player.y - 2).setDepth(this.player.y - 1);
 
     if (!this.lessonDone && Phaser.Math.Distance.Between(this.player.x, this.player.y, 320, 222) < 55) this.startLesson();
-    if (this.player.y >= 472) this.scene.start("CampusScene", { from: "Classroom" });
+    if (this.player.y >= 472) {
+      if (this.classEnded) this.scene.start("DriveHomeScene");
+      else this.scene.start("CampusScene", { from: "Classroom" });
+    }
   }
 
   private startLesson() {
@@ -148,6 +153,7 @@ export class ClassroomScene extends Phaser.Scene {
         s.reward(reward);
         s.patch({ lessonDay: lessonDay + 1 });
         this.marker.setVisible(false);
+        this.classEnded = true;
         this.dialogue.start(
           [
             { speaker: "Mr. Rivera", text: `You got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
