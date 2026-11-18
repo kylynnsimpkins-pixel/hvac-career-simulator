@@ -147,6 +147,17 @@ export function quizGrade(correct: number, total: number): string {
   return "Rough day. Review your notes before the next class.";
 }
 
+/** Today's quiz plus review questions drawn at random from earlier lessons; every 5th day is a weekly review exam. */
+export function dailyQuiz(day: number): QuizQuestion[] {
+  const own = lessonContent(day).quiz;
+  const past = LESSON_CONTENT.slice(0, Math.min(day, LESSON_CONTENT.length)).flatMap((l) => l.quiz);
+  const pick = (n: number) => [...past].sort(() => Math.random() - 0.5).slice(0, n);
+  if (day > 0 && day % 5 === 4) return pick(8);
+  return [...own, ...pick(2)];
+}
+
+export const isReviewDay = (day: number) => day > 0 && day % 5 === 4;
+
 export function lessonContent(day: number): LessonContent {
   return LESSON_CONTENT[day % LESSON_CONTENT.length];
 }

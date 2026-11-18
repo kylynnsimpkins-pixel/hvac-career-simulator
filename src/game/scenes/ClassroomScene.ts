@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 import { useGameStore } from "@/store/gameStore";
 import { dayProgress, focusFor } from "@/game/data/labGames";
-import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
+import { dailyQuiz, isReviewDay, HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
 import { floorTexture, lightShafts, wallPanel } from "./fx";
@@ -160,7 +160,7 @@ export class ClassroomScene extends Phaser.Scene {
       }
     }
     this.dialogue.start(classroomLines(playerName, lessonDay), () => {
-      const quiz = lessonContent(lessonDay).quiz;
+      const quiz = dailyQuiz(lessonDay);
       this.quiz.start(quiz, (correct) => {
         const reward = quizReward(correct, quiz.length);
         const s = useGameStore.getState();
@@ -170,7 +170,7 @@ export class ClassroomScene extends Phaser.Scene {
         this.classEnded = true;
         this.dialogue.start(
           [
-            { speaker: "Mr. Simpkins", text: `You got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
+            { speaker: "Mr. Simpkins", text: `${isReviewDay(lessonDay) ? "Weekly review: y" : "Y"}ou got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
             { speaker: "Mr. Simpkins", text: `Today you earn +${reward.xp} XP and +${reward.graduationPoints} Graduation points.` },
           ],
           () => this.showToast(`Class complete: +${reward.xp} XP, +${reward.graduationPoints} Graduation`),
