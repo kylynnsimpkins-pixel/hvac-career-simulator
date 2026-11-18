@@ -6,7 +6,8 @@ import { QuizBox } from "./QuizBox";
 import { floorTexture, lightShafts, wallPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
-import { bulletinBoard, extinguisher, plant, rug, sign, trashCan } from "./decor";
+import { canvasTexture } from "./fx";
+import { bulletinBoard, doorMat, extinguisher, plant, rug, schoolDesk, sign, teacherDesk, trashCan, wallClock } from "./decor";
 
 const FONT = "monospace";
 const SPEED = 170;
@@ -52,10 +53,7 @@ export class ClassroomScene extends Phaser.Scene {
 
     // Teacher and desk.
     this.add.image(320, 184, "teacher").setScale(0.75).setOrigin(0.5, 1).setDepth(166);
-    this.add.rectangle(320, 194, 116, 26, 0x8a5a2b).setStrokeStyle(2, 0x4b2e12).setDepth(190);
-    this.add.rectangle(320, 188, 116, 8, 0xb07a45).setDepth(191);
-    this.add.rectangle(296, 184, 14, 5, 0xc23b3b).setDepth(192);
-    this.add.circle(346, 183, 4, 0xd93a2b).setDepth(192);
+    teacherDesk(this, 320, 198);
     block(320, 194, 116, 26);
     this.marker = this.add.text(320, 142, "!", { fontFamily: FONT, fontSize: "18px", color: "#fde047", fontStyle: "bold" }).setOrigin(0.5).setDepth(9000);
     this.tweens.add({ targets: this.marker, y: 148, duration: 450, yoyo: true, repeat: -1 });
@@ -63,11 +61,7 @@ export class ClassroomScene extends Phaser.Scene {
     // Student desks and chairs.
     DESK_ROWS.forEach((y) =>
       DESK_COLS.forEach((x) => {
-        this.add.rectangle(x, y + 26, 24, 18, 0x3b6fd4).setStrokeStyle(2, 0x1f3f80).setDepth(y + 26);
-        this.add.rectangle(x, y + 17, 24, 4, 0x274d9e).setDepth(y + 27);
-        this.add.rectangle(x, y, 58, 28, 0xb07a45).setStrokeStyle(2, 0x6b4423).setDepth(y + 14);
-        this.add.rectangle(x, y - 6, 58, 6, 0xc99560).setDepth(y + 15);
-        this.add.rectangle(x - 12, y - 2, 16, 10, 0xffffff).setDepth(y + 16);
+        schoolDesk(this, x, y);
         block(x, y, 58, 28);
       }),
     );
@@ -191,9 +185,7 @@ export class ClassroomScene extends Phaser.Scene {
     lightShafts(this, [120, 320, 520], 156);
 
     // Wall clock.
-    this.add.circle(133, 40, 15, 0xf5f5f5).setStrokeStyle(3, 0x4b3a2a).setDepth(2);
-    this.add.rectangle(133, 34, 2, 11, 0x222222).setDepth(3);
-    this.add.rectangle(137, 40, 9, 2, 0x222222).setDepth(3);
+    wallClock(this, 133, 40);
 
     // HVAC posters.
     this.refrigerationPoster(70, 76);
@@ -212,8 +204,7 @@ export class ClassroomScene extends Phaser.Scene {
     trashCan(this, 612, 300);
 
     // Door and mat.
-    this.add.rectangle(320, 476, 44, 14, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(1);
-    this.add.rectangle(320, 462, 52, 10, 0x8b2f2f).setDepth(1);
+    doorMat(this, 320, 470, 0x8b2f2f);
   }
 
   private poster(x: number, y: number, w: number, h: number, color: number, title: string, lines: string[]) {
@@ -244,10 +235,18 @@ export class ClassroomScene extends Phaser.Scene {
   }
 
   private drawChalkboard(day: number) {
-    this.add.rectangle(320, 78, 318, 118, 0x6b4423).setDepth(2);
-    this.add.rectangle(320, 78, 304, 104, 0x2f4f3f).setStrokeStyle(2, 0x1d3328).setDepth(3);
-    this.add.rectangle(320, 140, 304, 6, 0x8b6b3f).setDepth(3);
-    this.add.rectangle(280, 137, 14, 3, 0xffffff).setDepth(4);
+    const bkey = canvasTexture(this, "d-chalk", 330, 130, (c) => {
+      c.fillStyle = "rgba(0,0,0,0.3)"; c.fillRect(6, 8, 322, 118);
+      const fr = c.createLinearGradient(0, 0, 0, 120); fr.addColorStop(0, "#8b5a2b"); fr.addColorStop(1, "#4b2e12");
+      c.fillStyle = fr; c.fillRect(2, 2, 322, 118);
+      const bd = c.createLinearGradient(0, 12, 330, 108); bd.addColorStop(0, "#2f5a47"); bd.addColorStop(1, "#1f3d31");
+      c.fillStyle = bd; c.fillRect(10, 10, 306, 104);
+      c.fillStyle = "rgba(255,255,255,0.05)"; for (let i = 0; i < 8; i++) c.fillRect(14 + i * 38, 14 + (i % 3) * 30, 30, 16);
+      c.fillStyle = "#a07a45"; c.fillRect(10, 110, 306, 8);
+      c.fillStyle = "#f8fafc"; c.fillRect(40, 108, 24, 5); c.fillStyle = "#fde68a"; c.fillRect(70, 109, 18, 4);
+      c.fillStyle = "#1f2937"; c.fillRect(240, 106, 30, 8);
+    });
+    this.add.image(320, 78, bkey).setScale(0.5).setDepth(2).setScale(0.96, 1);
 
     const plan = LESSON_PLANS[day % LESSON_PLANS.length];
     const hw = HOMEWORK[day % HOMEWORK.length];

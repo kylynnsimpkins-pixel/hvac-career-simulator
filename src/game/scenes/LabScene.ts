@@ -10,7 +10,7 @@ import { CribBox } from "./CribBox";
 import { floorTexture, lightShafts, wallPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, dropShadow, hudBar } from "./fx";
-import { bulletinBoard, extinguisher, plant, sign, trashCan, wallClock } from "./decor";
+import { bulletinBoard, doorMat, extinguisher, labBench, plant, sign, trashCan, wallClock, windowPane } from "./decor";
 
 const FONT = "monospace";
 const SPEED = 170;
@@ -250,10 +250,7 @@ export class LabScene extends Phaser.Scene {
     this.add.rectangle(320, 40, 280, 30, 0x1b2236).setStrokeStyle(2, trim).setDepth(2);
     this.add.text(320, 40, this.layout.title, { fontFamily: FONT, fontSize: "14px", color: "#ffffff", fontStyle: "bold" }).setOrigin(0.5).setDepth(3);
     [90, 550].forEach((x) => {
-      this.add.rectangle(x, 70, 70, 50, 0x3a4458).setDepth(2);
-      this.add.rectangle(x, 70, 62, 42, 0xa9dcf5).setDepth(3);
-      this.add.rectangle(x - 12, 62, 18, 4, 0xffffff, 0.5).setDepth(4);
-      this.add.rectangle(x, 70, 2, 42, 0x3a4458).setDepth(4);
+      windowPane(this, x, 70, 62, 42);
     });
 
     wallClock(this, 190, 80);
@@ -266,16 +263,13 @@ export class LabScene extends Phaser.Scene {
     trashCan(this, 28, 300);
 
     // Door and mat.
-    this.add.rectangle(320, 476, 44, 14, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(1);
-    this.add.rectangle(320, 462, 52, 10, trim).setDepth(1);
+    doorMat(this, 320, 470, trim);
   }
 
   private drawStation(s: Station) {
     const d = s.y + BENCH_H / 2;
     dropShadow(this, s.x, d + 3, s.w + 10, 12, d - 1);
-    this.add.rectangle(s.x, s.y + 6, s.w, BENCH_H - 12, 0x4a5568).setStrokeStyle(2, 0x2d3748).setDepth(d);
-    this.add.rectangle(s.x, s.y + 20, s.w - 6, 4, 0x2d3748).setDepth(d + 1);
-    this.add.rectangle(s.x, s.y - 8, s.w + 4, 8, 0xcbd5e0).setStrokeStyle(1, 0x718096).setDepth(d + 1);
+    labBench(this, s.x, s.y + 6, s.w, BENCH_H - 12, d);
     this.drawIcon(s, d + 2);
     this.add
       .text(s.x, s.y + 33, s.name, { fontFamily: FONT, fontSize: "9px", color: "#ffffff", backgroundColor: "#0b1224cc", padding: { x: 3, y: 1 } })

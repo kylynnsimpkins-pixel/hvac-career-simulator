@@ -7,7 +7,7 @@ import type { Reward } from "@/store/gameStore";
 import { DialogueBox } from "./DialogueBox";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { QuizBox } from "./QuizBox";
-import { floorLamp, picture, plant, sign, windowPane } from "./decor";
+import { doorMat, floorLamp, hvacUnit, picture, plant, sign, stairsArt, windowPane } from "./decor";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
 
@@ -94,30 +94,20 @@ export class JobsiteScene extends Phaser.Scene {
 
     if (lv.unit) {
       const u = lv.unit;
-      this.add.rectangle(u.x, u.y + 6, 96, 64, 0x000000, 0.25).setDepth(u.y);
-      this.add.rectangle(u.x, u.y, 90, 60, 0xb8c2cc).setStrokeStyle(3, 0x4b5563).setDepth(u.y + 1);
-      this.add.rectangle(u.x, u.y + 24, 90, 6, 0x6b7280).setDepth(u.y + 2);
-      this.add.rectangle(u.x - 36, u.y + 8, 10, 18, 0x374151).setDepth(u.y + 2);
-      this.add.circle(u.x, u.y - 2, 22, 0x374151).setStrokeStyle(2, 0x111827).setDepth(u.y + 2);
-      this.add.rectangle(u.x, u.y - 2, 40, 4, 0x9ca3af).setDepth(u.y + 3);
-      this.add.rectangle(u.x, u.y - 2, 4, 40, 0x9ca3af).setDepth(u.y + 3);
+      hvacUnit(this, u.x, u.y);
       this.add.text(u.x, u.y - 42, u.label, { fontFamily: FONT, fontSize: "11px", color: "#fde047", backgroundColor: "#000000aa", padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(9000);
       block(u.x, u.y, 90, 60);
     }
 
     const stairs = (x: number, y: number, label: string, up: boolean) => {
-      this.add.rectangle(x, y, 56, 44, 0x6b4a2b).setStrokeStyle(2, 0x2e1c0b).setDepth(2);
-      for (let i = 0; i < 5; i++) this.add.rectangle(x, y - 18 + i * 9, 50, 3, up ? 0xc99560 : 0x8a5f33).setDepth(3);
-      this.add.rectangle(x - 26, y, 3, 44, 0x2e1c0b).setDepth(3);
-      this.add.rectangle(x + 26, y, 3, 44, 0x2e1c0b).setDepth(3);
+      stairsArt(this, x, y, up);
       this.add.text(x, y - 36, `${up ? "▲" : "▼"} ${label}`, { fontFamily: FONT, fontSize: "11px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(9000);
     };
     if (lv.up) stairs(lv.up.x, lv.up.y, lv.up.label, true);
     if (lv.down) stairs(lv.down.x, lv.down.y, lv.down.label, false);
 
     if (this.levelIndex === 0) {
-      this.add.rectangle(320, 476, 44, 14, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(1);
-      this.add.rectangle(320, 462, 52, 10, 0x8b2f2f).setDepth(1);
+      doorMat(this, 320, 470, 0x8b2f2f);
       sign(this, 320, 446, "EXIT", "#166534");
     }
 

@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { CRIB_ITEMS } from "@/game/data/labGames";
-import { iconKey } from "./icons";
+import { iconKey, ICON_SS } from "./icons";
 import { roundRect } from "./fx";
 
 const FONT = "monospace";
@@ -27,7 +27,7 @@ export class CribBox {
       const x = 36 + (i % perRow) * 116;
       const y = 138 + Math.floor(i / perRow) * 140;
       const bg = scene.add.graphics();
-      const icon = scene.add.image(x + 54, y + 48, iconKey(scene, it.name)).setScale(2.4);
+      const icon = scene.add.image(x + 54, y + 48, iconKey(scene, it.name)).setScale(2.4 / ICON_SS);
       const label = scene.add.text(x + 54, y + 92, it.name, { fontFamily: FONT, fontSize: "10px", color: "#e6ecff", align: "center", wordWrap: { width: 104 } }).setOrigin(0.5, 0);
       const tag = scene.add.text(x + 54, y + 118, "", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", fontStyle: "bold" }).setOrigin(0.5, 0);
       const zone = scene.add.rectangle(x + 54, y + 62, 108, 128, 0xffffff, 0.001).setInteractive({ useHandCursor: true });

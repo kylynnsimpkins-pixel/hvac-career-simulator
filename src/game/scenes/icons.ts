@@ -282,16 +282,20 @@ function kindFor(name: string): { kind: string; color: number } {
   return { kind: "gear", color };
 }
 
+/** Icons are drawn at 4x resolution so they stay sharp when shown large; display scale is 1/ICON_SS of the old size. */
+export const ICON_SS = 4;
+
 /** Draws a small pixel-art picture for a tool or HVAC component the first time it's needed and returns its texture key. */
 export function iconKey(scene: Phaser.Scene, name: string): string {
   const { kind, color } = kindFor(name);
   const key = `ico-${kind}-${color}`;
   if (!scene.textures.exists(key)) {
     const g = scene.add.graphics().setVisible(false);
+    g.scaleCanvas(ICON_SS, ICON_SS);
     ICONS[kind](g, color);
-    g.generateTexture(key, 32, 32);
+    g.generateTexture(key, 32 * ICON_SS, 32 * ICON_SS);
     g.destroy();
-    scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
   }
   return key;
 }
