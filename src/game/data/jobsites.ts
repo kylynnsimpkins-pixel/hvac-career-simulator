@@ -247,7 +247,7 @@ export const SITES: Site[] = [
   },
 ];
 
-export const ROUNDS = 3;
+export const ROUNDS = 5;
 
 /** Round 1 keeps the original key so existing saves stay valid. */
 export const jobKey = (siteId: string, round = 1) => (round <= 1 ? `job:${siteId}` : `job:${siteId}:${round}`);
@@ -272,6 +272,8 @@ export const COMPLAINTS = [
   "",
   "The customer called back with a new problem: the system is acting up again. Find out what is going on.",
   "Urgent callback: the customer says it is worse this week. Diagnose it carefully.",
+  "Another visit: a different part of the system is now failing. Run a full diagnosis.",
+  "Final callback: the customer wants a complete check-up and a clear explanation.",
 ];
 
 const fq = (q: string, choices: string[], answer: number, why: string): QuizQuestion => ({ q, choices, answer, why });
@@ -286,6 +288,9 @@ export const FOLLOWUPS: QuizQuestion[] = [
   fq("What does SEER measure?", ["Seasonal cooling efficiency", "Gas pressure", "Duct size", "Voltage"], 0, "SEER is Seasonal Energy Efficiency Ratio."),
   fq("The customer asks what a TXV does. You explain it...", ["Meters refrigerant to the evaporator", "Cleans air", "Reads amps", "Cools the compressor oil"], 0, "A thermostatic expansion valve meters refrigerant flow."),
   fq("The customer hears water dripping inside. Check first...", ["The condensate drain", "The compressor", "The thermostat battery", "The gas valve"], 0, "A clogged condensate drain overflows."),
+  fq("The customer asks why the system short cycles. A common cause is...", ["An oversized unit or restricted airflow", "A clean filter", "Too much sunlight", "A full tank"], 0, "Oversizing and restrictions cut run cycles short."),
+  fq("The customer asks if a higher MERV filter is always better. You say...", ["Not always, it can restrict airflow", "Yes, always", "Filters do nothing", "Only for gas heat"], 0, "Match the filter to what the system can handle."),
+  fq("The customer asks why you need a permit. You explain...", ["It verifies the work meets code", "It raises your price", "It is optional decoration", "It is for the manufacturer"], 0, "Permits and inspections protect the home."),
   fq("The customer wants a CO detector recommendation. You say...", ["Install them near sleeping areas", "They are optional decoration", "Only in the attic", "Not needed with electric heat"], 0, "Place CO alarms outside bedrooms and on each level."),
 ];
 

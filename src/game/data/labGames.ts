@@ -1,5 +1,6 @@
 import type { DialogueLine } from "./dialogue";
 import { MORE_FOCUS } from "./curriculum";
+import { EXTRA_FOCUS } from "./curriculum2";
 import { HOMEWORK, LESSON_PLANS } from "./dialogue";
 import { LAB_LAYOUTS, type Station, type StationKind } from "./labLayouts";
 
@@ -19,7 +20,7 @@ export const LESSON_FOCUS: LessonFocus[] = [
   { kinds: ["workorder", "furnace", "thermostat", "meter"], lab: "Troubleshooting" },
 ];
 
-LESSON_FOCUS.push(...MORE_FOCUS);
+LESSON_FOCUS.push(...MORE_FOCUS, ...EXTRA_FOCUS);
 
 export const focusFor = (lesson: number) => LESSON_FOCUS[lesson % LESSON_FOCUS.length];
 export const planFor = (lesson: number) => LESSON_PLANS[lesson % LESSON_PLANS.length];

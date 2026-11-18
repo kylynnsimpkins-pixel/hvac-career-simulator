@@ -1,4 +1,5 @@
 import { MORE_CONTENT, MORE_HOMEWORK, MORE_PLANS } from "./curriculum";
+import { EXTRA_CONTENT, EXTRA_HOMEWORK, EXTRA_PLANS } from "./curriculum2";
 import type { QuizQuestion } from "@/game/scenes/QuizBox";
 
 export interface DialogueLine {
@@ -175,3 +176,6 @@ export const BRIEFINGS: Record<string, DialogueLine[]> = {
 LESSON_PLANS.push(...MORE_PLANS);
 HOMEWORK.push(...MORE_HOMEWORK);
 LESSON_CONTENT.push(...MORE_CONTENT);
+LESSON_PLANS.push(...EXTRA_PLANS);
+HOMEWORK.push(...EXTRA_HOMEWORK);
+LESSON_CONTENT.push(...EXTRA_CONTENT);

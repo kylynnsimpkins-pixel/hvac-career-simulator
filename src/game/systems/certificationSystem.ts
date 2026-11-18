@@ -19,7 +19,7 @@ export function hasCertification(profile: SaveProfile, id: CertificationId): boo
 /** Service calls the student has completed in the field. */
 export const serviceCallCount = (profile: SaveProfile) => profile.completedQuests.filter((k) => k.startsWith("job:")).length;
 
-const CALLS_REQUIRED: Record<CertificationId, number> = { epa608: 0, osha10: 2, osha30: 6, nate: 12 };
+const CALLS_REQUIRED: Record<CertificationId, number> = { epa608: 0, osha10: 3, osha30: 10, nate: 18 };
 const PREREQS: Record<CertificationId, CertificationId[]> = { epa608: [], osha10: [], osha30: ["osha10"], nate: ["epa608", "osha30"] };
 
 /** Unmet requirements before the student may sit this cert's exam. */
