@@ -1,8 +1,22 @@
 [
   { "id": "p1", "category": "placement", "prompt": "Ohm's law is:", "choices": ["V = I x R", "P = V / R", "I = V x R"], "answerIndex": 0, "xp": 10 },
-  { "id": "p2", "category": "placement", "prompt": "A capacitor stores:", "choices": ["Charge", "Refrigerant", "Heat"], "answerIndex": 0, "xp": 10 },
+  { "id": "p2", "category": "placement", "prompt": "A capacitor stores:", "choices": ["Electrical charge", "Refrigerant", "Heat"], "answerIndex": 0, "xp": 10 },
   { "id": "p3", "category": "placement", "prompt": "Which unit measures cooling capacity?", "choices": ["Volts", "BTU/hr", "Ohms"], "answerIndex": 1, "xp": 10 },
   { "id": "p4", "category": "placement", "prompt": "Which component compresses refrigerant vapor?", "choices": ["Evaporator", "Compressor", "Metering device"], "answerIndex": 1, "xp": 10 },
   { "id": "p5", "category": "placement", "prompt": "Before working on a circuit you should:", "choices": ["Lock out and tag out power", "Bypass the breaker", "Wet your hands"], "answerIndex": 0, "xp": 10 },
-  { "id": "p6", "category": "placement", "prompt": "A contactor is used to:", "choices": ["Store charge", "Switch high-current loads", "Measure airflow"], "answerIndex": 1, "xp": 10 }
+  { "id": "p6", "category": "placement", "prompt": "A contactor is used to:", "choices": ["Store charge", "Switch high-current loads", "Measure airflow"], "answerIndex": 1, "xp": 10 },
+  { "id": "p7", "category": "placement", "prompt": "One ton of cooling equals:", "choices": ["6,000 BTU/hr", "12,000 BTU/hr", "24,000 BTU/hr"], "answerIndex": 1, "xp": 10 },
+  { "id": "p8", "category": "placement", "prompt": "Typical residential control voltage is:", "choices": ["24 V", "120 V", "480 V"], "answerIndex": 0, "xp": 10 },
+  { "id": "p9", "category": "placement", "prompt": "Superheat is measured at the:", "choices": ["Suction line near the evaporator outlet", "Liquid line", "Discharge line"], "answerIndex": 0, "xp": 10 },
+  { "id": "p10", "category": "placement", "prompt": "Which meter setting checks for an open winding?", "choices": ["Ohms (resistance)", "AC volts", "DC amps"], "answerIndex": 0, "xp": 10 },
+  { "id": "p11", "category": "placement", "prompt": "A dirty air filter most often causes:", "choices": ["Reduced airflow", "Overcharged system", "Higher voltage"], "answerIndex": 0, "xp": 10 },
+  { "id": "p12", "category": "placement", "prompt": "Which refrigerant law requires technician certification?", "choices": ["EPA Section 608", "OSHA 10", "NEC 90"], "answerIndex": 0, "xp": 10 },
+  { "id": "p13", "category": "placement", "prompt": "The metering device does what?", "choices": ["Drops refrigerant pressure and controls flow", "Compresses vapor", "Filters air"], "answerIndex": 0, "xp": 10 },
+  { "id": "p14", "category": "placement", "prompt": "Typical temperature drop across a cooling coil is about:", "choices": ["5-8 F", "18-22 F", "40-50 F"], "answerIndex": 1, "xp": 10 },
+  { "id": "p15", "category": "placement", "prompt": "A run capacitor is rated in:", "choices": ["Microfarads (uF)", "Amps", "BTU"], "answerIndex": 0, "xp": 10 },
+  { "id": "p16", "category": "placement", "prompt": "Which PPE protects against refrigerant frostbite?", "choices": ["Gloves and safety glasses", "Sandals", "Ear plugs only"], "answerIndex": 0, "xp": 10 },
+  { "id": "p17", "category": "placement", "prompt": "Subcooling is measured on the:", "choices": ["Liquid line", "Suction line", "Return duct"], "answerIndex": 0, "xp": 10 },
+  { "id": "p18", "category": "placement", "prompt": "A thermostat 'R' terminal is:", "choices": ["24 V power", "Cooling call", "Fan call"], "answerIndex": 0, "xp": 10 },
+  { "id": "p19", "category": "placement", "prompt": "Which tool pulls moisture and air out of a system?", "choices": ["Vacuum pump", "Clamp meter", "Tubing cutter"], "answerIndex": 0, "xp": 10 },
+  { "id": "p20", "category": "placement", "prompt": "Airflow for cooling is roughly:", "choices": ["400 CFM per ton", "100 CFM per ton", "1,000 CFM per ton"], "answerIndex": 0, "xp": 10 }
 ]
