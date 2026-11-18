@@ -8,6 +8,7 @@ import { SCENARIOS } from "@/game/data/scenarios";
 import { DiagnoseGame } from "./DiagnoseGame";
 import { CribBox } from "./CribBox";
 import { addVignette, dropShadow, hudBar } from "./fx";
+import { bulletinBoard, extinguisher, plant, sign, trashCan, wallClock } from "./decor";
 
 const FONT = "monospace";
 const SPEED = 170;
@@ -260,6 +261,15 @@ export class LabScene extends Phaser.Scene {
       this.add.rectangle(x - 12, 62, 18, 4, 0xffffff, 0.5).setDepth(4);
       this.add.rectangle(x, 70, 2, 42, 0x3a4458).setDepth(4);
     });
+
+    wallClock(this, 190, 80);
+    extinguisher(this, 450, 100);
+    bulletinBoard(this, 320, 100, 90, 34);
+    sign(this, 320, 140, "SAFETY GLASSES REQUIRED", "#b45309");
+    this.add.rectangle(320, 272, 600, 4, 0xfde047, 0.55).setDepth(1);
+    plant(this, 28, 430);
+    trashCan(this, 612, 430);
+    trashCan(this, 28, 300);
 
     // Door and mat.
     this.add.rectangle(320, 476, 44, 14, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(1);

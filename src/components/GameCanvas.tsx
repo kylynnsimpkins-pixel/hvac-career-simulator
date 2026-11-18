@@ -17,6 +17,8 @@ export default function GameCanvas() {
       const { DriveHomeScene } = await import("@/game/scenes/DriveHomeScene");
       const { JobMapScene } = await import("@/game/scenes/JobMapScene");
       const { JobsiteScene } = await import("@/game/scenes/JobsiteScene");
+      const { GraduationScene } = await import("@/game/scenes/GraduationScene");
+      const { ExamScene } = await import("@/game/scenes/ExamScene");
       if (cancelled || !ref.current) return;
       game = new Phaser.Game({
         type: Phaser.AUTO,
@@ -26,7 +28,7 @@ export default function GameCanvas() {
         height: 480,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-        scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, JobsiteScene],
+        scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, JobsiteScene, GraduationScene, ExamScene],
       });
     })();
 

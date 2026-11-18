@@ -99,6 +99,7 @@ export class CampusScene extends Phaser.Scene {
       .setVisible(false);
 
     this.drawVan();
+    this.drawTestCenter();
     this.buildDialogueBox();
     this.add.image(150, 196, "teacher").setScale(1.5).setOrigin(0.5, 1).setDepth(196);
 
@@ -121,6 +122,10 @@ export class CampusScene extends Phaser.Scene {
     if (!this.introChecked && useGameStore.getState().active) {
       this.introChecked = true;
       const a = useGameStore.getState().active!;
+      if (a.graduated && !a.graduationSeen) {
+        this.scene.start("GraduationScene");
+        return;
+      }
       if (!a.seenIntro) {
         this.startDialogue(INTRO.map((l) => ({ ...l, text: l.text.replace("{name}", a.playerName) })), () =>
           useGameStore.getState().patch({ seenIntro: true }),
@@ -162,6 +167,14 @@ export class CampusScene extends Phaser.Scene {
       else this.showToast("Create a profile first");
     }
 
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, 530, 452) < 36 && time > (this.cooldown.get("exam") ?? 0)) {
+      this.cooldown.set("exam", time + 3000);
+      const ga = useGameStore.getState().active;
+      if (!ga) this.showToast("Create a profile first");
+      else if (!ga.graduated) this.showToast("Graduate first: earn 1000 graduation points");
+      else this.scene.start("ExamScene");
+    }
+
     for (const b of BUILDINGS) {
       const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, b.x, b.y + DOOR_OFFSET) < 34;
       if (near && time > (this.cooldown.get(b.label) ?? 0)) {
@@ -169,6 +182,14 @@ export class CampusScene extends Phaser.Scene {
         this.enter(b);
       }
     }
+  }
+
+  private drawTestCenter() {
+    this.add.ellipse(530, 470, 70, 8, 0x000000, 0.25).setDepth(440);
+    this.add.rectangle(530, 450, 64, 34, 0xe2e8f0).setStrokeStyle(2, 0x1a3a6b).setDepth(450);
+    this.add.rectangle(530, 440, 68, 8, 0x1a3a6b).setDepth(451);
+    this.add.rectangle(530, 458, 14, 18, 0x7c4a03).setDepth(451);
+    this.add.text(530, 421, "EPA 608 Test Center", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
   }
 
   private drawVan() {

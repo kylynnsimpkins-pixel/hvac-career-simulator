@@ -4,6 +4,7 @@ import { HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizR
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
 import { addVignette, hudBar } from "./fx";
+import { bulletinBoard, extinguisher, plant, rug, sign, trashCan } from "./decor";
 
 const FONT = "monospace";
 const SPEED = 170;
@@ -197,6 +198,17 @@ export class ClassroomScene extends Phaser.Scene {
     this.refrigerationPoster(70, 76);
     this.poster(522, 76, 60, 78, 0xe0a800, "OHM'S LAW", ["V", "=", "I x R"]);
     this.poster(590, 76, 56, 78, 0xc23b3b, "SAFETY", ["LOCKOUT", "TAGOUT", "ALWAYS"]);
+
+    // Details: bulletin board, extinguisher, exit sign, rugs, plants and bins.
+    bulletinBoard(this, 40, 112, 56, 30);
+    extinguisher(this, 14, 120);
+    sign(this, 320, 462 - 30, "EXIT", "#166534");
+    rug(this, 320, 206, 190, 40, 0x6d4c8c);
+    rug(this, 320, 350, 110, 190, 0x7a3b3b);
+    plant(this, 28, 200);
+    plant(this, 612, 200);
+    trashCan(this, 28, 300);
+    trashCan(this, 612, 300);
 
     // Door and mat.
     this.add.rectangle(320, 476, 44, 14, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(1);

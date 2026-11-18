@@ -1,4 +1,5 @@
 import type { QuizQuestion } from "@/game/scenes/QuizBox";
+import type { StationKind } from "./labLayouts";
 import type { Reward } from "@/store/gameStore";
 
 export type SiteKind = "Residential" | "Commercial";
@@ -27,6 +28,8 @@ export interface Site {
   /** Position and look on the town map. */
   map: { x: number; y: number; w: number; h: number; wall: number; roof: number };
   complaint: string;
+  /** Drag-and-drop diagnosis scenario used for the service call. */
+  scenario: StationKind;
   question: QuizQuestion;
   reward: Reward;
   levels: Level[];
@@ -37,6 +40,7 @@ const home = (name: string, floor: number): Pick<Level, "name" | "floor" | "wall
 export const SITES: Site[] = [
   {
     id: "ranch",
+    scenario: "parts",
     name: "One-Story Home",
     kind: "Residential",
     map: { x: 110, y: 330, w: 90, h: 56, wall: 0xe8c7a0, roof: 0x8b3a2f },
@@ -75,6 +79,7 @@ export const SITES: Site[] = [
   },
   {
     id: "twostory",
+    scenario: "airflow",
     name: "Two-Story Home",
     kind: "Residential",
     map: { x: 260, y: 330, w: 90, h: 76, wall: 0xb7d0c0, roof: 0x4a5a78 },
@@ -119,6 +124,7 @@ export const SITES: Site[] = [
   },
   {
     id: "grocery",
+    scenario: "coil",
     name: "Grocery Store",
     kind: "Commercial",
     map: { x: 430, y: 190, w: 120, h: 60, wall: 0xd9d9d9, roof: 0x2f855a },
@@ -159,6 +165,7 @@ export const SITES: Site[] = [
   },
   {
     id: "school",
+    scenario: "thermostat",
     name: "School",
     kind: "Commercial",
     map: { x: 80, y: 190, w: 130, h: 60, wall: 0xc2410c, roof: 0x57534e },
@@ -199,6 +206,7 @@ export const SITES: Site[] = [
   },
   {
     id: "restaurant",
+    scenario: "gauges",
     name: "Restaurant",
     kind: "Commercial",
     map: { x: 250, y: 190, w: 110, h: 56, wall: 0xf4a261, roof: 0x9d2c2c },

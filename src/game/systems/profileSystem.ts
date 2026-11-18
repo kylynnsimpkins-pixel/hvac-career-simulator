@@ -5,6 +5,8 @@ export function createProfile(playerName: string, avatarColor = "#38bdf8", speci
   return {
     avatarColor,
     seenIntro: false,
+    graduationSeen: false,
+    epaSections: [],
     lessonDay: 0,
     stationsDone: [],
     checkedOut: [],
