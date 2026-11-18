@@ -1,32 +1,54 @@
 import type { SaveProfile } from "@/types/saveProfile";
-import { loadJSON, removeKey, saveJSON } from "@/utils/localStorage";
+import { createProfile } from "./profileSystem";
 
-const PROFILES_KEY = "hvac-sim:profiles";
-const ACTIVE_KEY = "hvac-sim:active";
+const PROFILE_PREFIX = "hvac-profile-";
+const ACTIVE_KEY = "hvac-active-profile";
+
+export function profileKey(playerName: string): string {
+  return `${PROFILE_PREFIX}${playerName.trim().toLowerCase()}`;
+}
+
+/** Saves a profile under its own key so several students can share one computer. */
+export function saveGame(profile: SaveProfile): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(profileKey(profile.playerName), JSON.stringify(profile));
+  localStorage.setItem(ACTIVE_KEY, profile.playerName);
+}
+
+export function loadGame(playerName: string): SaveProfile | null {
+  if (typeof window === "undefined") return null;
+  const data = localStorage.getItem(profileKey(playerName));
+  if (!data) return null;
+  try {
+    // Merge over defaults so older saves missing new fields still load.
+    return { ...createProfile(playerName), ...JSON.parse(data) } as SaveProfile;
+  } catch {
+    return null;
+  }
+}
+
+export function deleteSave(playerName: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(profileKey(playerName));
+  if (localStorage.getItem(ACTIVE_KEY)?.toLowerCase() === playerName.trim().toLowerCase()) {
+    localStorage.removeItem(ACTIVE_KEY);
+  }
+}
 
 export function listProfiles(): SaveProfile[] {
-  return loadJSON<SaveProfile[]>(PROFILES_KEY, []);
+  if (typeof window === "undefined") return [];
+  const profiles: SaveProfile[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || !key.startsWith(PROFILE_PREFIX)) continue;
+    const name = (JSON.parse(localStorage.getItem(key) ?? "{}") as Partial<SaveProfile>).playerName;
+    const profile = name ? loadGame(name) : null;
+    if (profile) profiles.push(profile);
+  }
+  return profiles.sort((a, b) => a.playerName.localeCompare(b.playerName));
 }
 
-export function saveProfile(profile: SaveProfile): boolean {
-  const updated = { ...profile, updatedAt: new Date().toISOString() };
-  const others = listProfiles().filter((p) => p.id !== profile.id);
-  return saveJSON(PROFILES_KEY, [...others, updated]);
-}
-
-export function loadProfile(id: string): SaveProfile | null {
-  return listProfiles().find((p) => p.id === id) ?? null;
-}
-
-export function deleteProfile(id: string): void {
-  saveJSON(PROFILES_KEY, listProfiles().filter((p) => p.id !== id));
-  if (getActiveProfileId() === id) removeKey(ACTIVE_KEY);
-}
-
-export function getActiveProfileId(): string | null {
-  return loadJSON<string | null>(ACTIVE_KEY, null);
-}
-
-export function setActiveProfileId(id: string): void {
-  saveJSON(ACTIVE_KEY, id);
+export function getActiveProfileName(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ACTIVE_KEY);
 }

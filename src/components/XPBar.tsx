@@ -9,7 +9,7 @@ export default function XPBar({ xp }: { xp: number }) {
       <div className="h-3 rounded bg-slate-700">
         <div className="h-3 rounded bg-hvac-blue" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1 text-xs text-slate-300">{xp} XP ({pct}% to next level)</p>
+      <p className="mt-1 text-xs text-slate-300">{xp} XP</p>
     </div>
   );
 }

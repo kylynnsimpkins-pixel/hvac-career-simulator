@@ -1,21 +1,24 @@
 "use client";
 
 import GraduationMeter from "@/components/GraduationMeter";
-import { canGraduate, graduationProgress } from "@/game/systems/graduationSystem";
 import { useGameStore } from "@/store/gameStore";
 
 export default function GraduationPage() {
   const active = useGameStore((s) => s.active);
   return (
-    <section>
-      <h1 className="mb-4 text-2xl font-bold">Graduation</h1>
+    <section className="space-y-3">
+      <h1 className="text-2xl font-bold">Graduation</h1>
       {active ? (
         <>
-          <GraduationMeter progress={graduationProgress(active)} />
-          <p className="mt-2">{canGraduate(active) ? "Ready to graduate!" : "Keep training."}</p>
+          <GraduationMeter profile={active} />
+          <p>
+            {active.graduated
+              ? "Graduated! Career Services, Certification Center and Placement Exam are unlocked."
+              : "Earn 1000 graduation points to graduate."}
+          </p>
         </>
       ) : (
-        <p>Select a profile first.</p>
+        <p>Create or load a profile first.</p>
       )}
     </section>
   );

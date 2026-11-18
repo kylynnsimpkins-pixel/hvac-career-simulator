@@ -1,19 +1,23 @@
 import type { SaveProfile } from "@/types/saveProfile";
+import { levelTitle } from "./xpSystem";
 
-export function createProfile(name: string): SaveProfile {
-  const id = `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+export function createProfile(playerName: string): SaveProfile {
   return {
-    id,
-    name: name.trim() || "Student",
-    player: { id, name: name.trim() || "Student", xp: 0, level: 1, money: 0 },
-    certifications: {},
-    completedCourses: [],
-    careerPath: null,
-    contractorScore: 0,
-    updatedAt: new Date().toISOString(),
+    playerName: playerName.trim() || "Student",
+    xp: 0,
+    graduationPoints: 0,
+    contractorCredits: 0,
+    money: 0,
+    certifications: [],
+    electrical: 0,
+    mechanical: 0,
+    diagnostics: 0,
+    safety: 0,
+    customerService: 0,
+    leadership: 0,
+    sales: 0,
+    level: levelTitle(0),
+    completedLabs: [],
+    graduated: false,
   };
-}
-
-export function renameProfile(profile: SaveProfile, name: string): SaveProfile {
-  return { ...profile, name, player: { ...profile.player, name } };
 }

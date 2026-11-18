@@ -1,25 +1,17 @@
 import type { SaveProfile } from "@/types/saveProfile";
 import { percent } from "@/utils/calculations";
-import { CERTIFICATIONS, earnedCount } from "./certificationSystem";
 
-export const REQUIRED_COURSES = ["classroom", "electrical-lab", "refrigeration-lab", "troubleshooting"];
-export const GRADUATION_LEVEL = 5;
+export const GRADUATION_POINTS_REQUIRED = 1000;
 
-/** Weighted graduation progress, 0-100: courses 50%, certifications 30%, level 20%. */
 export function graduationProgress(profile: SaveProfile): number {
-  const courses = percent(
-    REQUIRED_COURSES.filter((c) => profile.completedCourses.includes(c)).length,
-    REQUIRED_COURSES.length,
-  );
-  const certs = percent(earnedCount(profile.certifications), CERTIFICATIONS.length);
-  const level = percent(profile.player.level, GRADUATION_LEVEL);
-  return Math.round(courses * 0.5 + certs * 0.3 + level * 0.2);
+  return percent(profile.graduationPoints, GRADUATION_POINTS_REQUIRED);
 }
 
-export function canGraduate(profile: SaveProfile): boolean {
-  return (
-    REQUIRED_COURSES.every((c) => profile.completedCourses.includes(c)) &&
-    !!profile.certifications.epa608 &&
-    profile.player.level >= GRADUATION_LEVEL
-  );
+export function shouldGraduate(profile: SaveProfile): boolean {
+  return !profile.graduated && profile.graduationPoints >= GRADUATION_POINTS_REQUIRED;
+}
+
+/** Career Services, Certification Center and Placement Exam unlock after graduation. */
+export function isGraduated(profile: SaveProfile): boolean {
+  return profile.graduated;
 }

@@ -1,30 +1,33 @@
-import type { CareerPath, SaveProfile } from "@/types/saveProfile";
+import type { SaveProfile } from "@/types/saveProfile";
+
+export type CareerPathName = "Residential" | "Commercial";
 
 export interface CareerInfo {
-  id: Exclude<CareerPath, null>;
-  title: string;
-  baseSalary: number;
-  requiredCert: "epa608" | "nate";
+  id: CareerPathName;
+  employers: string[];
+  skills: (keyof SaveProfile)[];
 }
 
 export const CAREERS: CareerInfo[] = [
-  { id: "residential", title: "Residential Technician", baseSalary: 48000, requiredCert: "epa608" },
-  { id: "commercial", title: "Commercial Technician", baseSalary: 62000, requiredCert: "nate" },
-  { id: "company", title: "Company Owner", baseSalary: 85000, requiredCert: "nate" },
+  {
+    id: "Commercial",
+    employers: ["Carrier", "Trane", "Johnson Controls", "Daikin", "EMCOR"],
+    skills: ["electrical", "mechanical", "diagnostics"],
+  },
+  {
+    id: "Residential",
+    employers: ["One Hour Heating & Air", "Aire Serv", "ARS Rescue Rooter"],
+    skills: ["customerService", "sales", "leadership"],
+  },
 ];
 
-export function eligibleCareers(profile: SaveProfile): CareerInfo[] {
-  return CAREERS.filter((c) => !!profile.certifications[c.requiredCert]);
+/** Average of the career's key skills; useful for recommending a path. */
+export function careerFit(profile: SaveProfile, career: CareerInfo): number {
+  const total = career.skills.reduce((sum, s) => sum + (profile[s] as number), 0);
+  return Math.round(total / career.skills.length);
 }
 
-export function chooseCareer(profile: SaveProfile, path: Exclude<CareerPath, null>): SaveProfile {
-  const info = CAREERS.find((c) => c.id === path);
-  if (!info || !profile.certifications[info.requiredCert]) return profile;
-  return { ...profile, careerPath: path };
-}
-
-export function projectedSalary(profile: SaveProfile): number {
-  const info = CAREERS.find((c) => c.id === profile.careerPath);
-  if (!info) return 0;
-  return Math.round(info.baseSalary * (1 + profile.contractorScore / 200));
+export function recommendedCareer(profile: SaveProfile): CareerPathName {
+  const [a, b] = CAREERS;
+  return careerFit(profile, a) >= careerFit(profile, b) ? a.id : b.id;
 }

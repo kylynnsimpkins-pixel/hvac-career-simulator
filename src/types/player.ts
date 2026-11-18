@@ -1,7 +1,10 @@
-export interface Player {
-  id: string;
-  name: string;
-  xp: number;
-  level: number;
-  money: number;
-}
+export type SkillName =
+  | "electrical"
+  | "mechanical"
+  | "diagnostics"
+  | "safety"
+  | "customerService"
+  | "leadership"
+  | "sales";
+
+export type Skills = Record<SkillName, number>;

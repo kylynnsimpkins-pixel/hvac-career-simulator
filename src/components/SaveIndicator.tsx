@@ -1,9 +1,15 @@
 "use client";
 
-export default function SaveIndicator({ saved }: { saved: boolean }) {
+import { useGameStore } from "@/store/gameStore";
+
+export default function SaveIndicator() {
+  const justSaved = useGameStore((s) => s.justSaved);
   return (
-    <span className={saved ? "text-xs text-green-400" : "text-xs text-yellow-400"}>
-      {saved ? "Saved" : "Unsaved changes"}
+    <span
+      className={`text-sm text-green-400 transition-opacity ${justSaved ? "opacity-100" : "opacity-0"}`}
+      aria-live="polite"
+    >
+      ✅ Profile Saved
     </span>
   );
 }

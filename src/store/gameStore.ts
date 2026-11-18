@@ -1,84 +1,115 @@
 import { create } from "zustand";
 import type { SaveProfile } from "@/types/saveProfile";
 import type { CertificationId } from "@/types/certification";
+import type { SkillName } from "@/types/player";
 import { createProfile } from "@/game/systems/profileSystem";
-import { addXp } from "@/game/systems/xpSystem";
-import { awardCertification } from "@/game/systems/certificationSystem";
-import {
-  deleteProfile,
-  getActiveProfileId,
-  listProfiles,
-  loadProfile,
-  saveProfile,
-  setActiveProfileId,
-} from "@/game/systems/saveSystem";
+import { levelTitle } from "@/game/systems/xpSystem";
+import { addCertification, canEarn } from "@/game/systems/certificationSystem";
+import { shouldGraduate } from "@/game/systems/graduationSystem";
+import { deleteSave, getActiveProfileName, listProfiles, loadGame, saveGame } from "@/game/systems/saveSystem";
+
+export interface Reward {
+  xp?: number;
+  graduationPoints?: number;
+  contractorCredits?: number;
+  money?: number;
+  skill?: SkillName;
+  skillPoints?: number;
+}
 
 interface GameState {
   profiles: SaveProfile[];
   active: SaveProfile | null;
-  saved: boolean;
+  justSaved: boolean;
   init: () => void;
   newProfile: (name: string) => void;
-  selectProfile: (id: string) => void;
-  removeProfile: (id: string) => void;
-  gainXp: (amount: number) => void;
-  completeCourse: (course: string) => void;
-  attemptCert: (id: CertificationId, score: number) => boolean;
-  save: () => void;
+  selectProfile: (name: string) => void;
+  removeProfile: (name: string) => void;
+  reward: (r: Reward) => void;
+  completeLab: (labId: string, r: Reward) => void;
+  earnCertification: (id: CertificationId) => boolean;
+  chooseCareer: (path: string) => void;
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
-  profiles: [],
-  active: null,
-  saved: true,
+let flashTimer: ReturnType<typeof setTimeout> | undefined;
 
-  init: () => {
-    const activeId = getActiveProfileId();
-    set({ profiles: listProfiles(), active: activeId ? loadProfile(activeId) : null });
-  },
+export const useGameStore = create<GameState>((set, get) => {
+  /** Persists the profile (auto save) and briefly shows the save indicator. */
+  const commit = (profile: SaveProfile) => {
+    const next = { ...profile, level: levelTitle(profile.xp) };
+    if (shouldGraduate(next)) next.graduated = true;
+    saveGame(next);
+    set({ active: next, profiles: listProfiles(), justSaved: true });
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => set({ justSaved: false }), 2000);
+  };
 
-  newProfile: (name) => {
-    const profile = createProfile(name);
-    saveProfile(profile);
-    setActiveProfileId(profile.id);
-    set({ profiles: listProfiles(), active: profile, saved: true });
-  },
+  const applyReward = (p: SaveProfile, r: Reward): SaveProfile => {
+    const next = {
+      ...p,
+      xp: p.xp + (r.xp ?? 0),
+      graduationPoints: p.graduationPoints + (r.graduationPoints ?? 0),
+      contractorCredits: p.contractorCredits + (r.contractorCredits ?? 0),
+      money: p.money + (r.money ?? 0),
+    };
+    if (r.skill) next[r.skill] = p[r.skill] + (r.skillPoints ?? 1);
+    return next;
+  };
 
-  selectProfile: (id) => {
-    setActiveProfileId(id);
-    set({ active: loadProfile(id), saved: true });
-  },
+  return {
+    profiles: [],
+    active: null,
+    justSaved: false,
 
-  removeProfile: (id) => {
-    deleteProfile(id);
-    set({ profiles: listProfiles(), active: get().active?.id === id ? null : get().active });
-  },
+    init: () => {
+      const name = getActiveProfileName();
+      set({ profiles: listProfiles(), active: name ? loadGame(name) : null });
+    },
 
-  gainXp: (amount) => {
-    const a = get().active;
-    if (!a) return;
-    const { xp, level } = addXp(a.player.xp, amount);
-    set({ active: { ...a, player: { ...a.player, xp, level } }, saved: false });
-  },
+    newProfile: (name) => {
+      const existing = loadGame(name);
+      commit(existing ?? createProfile(name));
+    },
 
-  completeCourse: (course) => {
-    const a = get().active;
-    if (!a || a.completedCourses.includes(course)) return;
-    set({ active: { ...a, completedCourses: [...a.completedCourses, course] }, saved: false });
-  },
+    selectProfile: (name) => {
+      const profile = loadGame(name);
+      if (profile) commit(profile);
+    },
 
-  attemptCert: (id, score) => {
-    const a = get().active;
-    if (!a) return false;
-    const result = awardCertification(a.certifications, id, score, a.player.level);
-    set({ active: { ...a, certifications: result.earned }, saved: false });
-    return result.passed;
-  },
+    removeProfile: (name) => {
+      deleteSave(name);
+      const active = get().active;
+      set({
+        profiles: listProfiles(),
+        active: active?.playerName.toLowerCase() === name.toLowerCase() ? null : active,
+      });
+    },
 
-  save: () => {
-    const a = get().active;
-    if (!a) return;
-    saveProfile(a);
-    set({ profiles: listProfiles(), saved: true });
-  },
-}));
+    reward: (r) => {
+      const a = get().active;
+      if (a) commit(applyReward(a, r));
+    },
+
+    completeLab: (labId, r) => {
+      const a = get().active;
+      if (!a) return;
+      const withReward = applyReward(a, r);
+      commit({
+        ...withReward,
+        completedLabs: a.completedLabs.includes(labId) ? a.completedLabs : [...a.completedLabs, labId],
+      });
+    },
+
+    earnCertification: (id) => {
+      const a = get().active;
+      if (!a || !canEarn(a, id)) return false;
+      commit({ ...a, certifications: addCertification(a, id) });
+      return true;
+    },
+
+    chooseCareer: (path) => {
+      const a = get().active;
+      if (a && a.graduated) commit({ ...a, careerPath: path });
+    },
+  };
+});

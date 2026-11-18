@@ -1,15 +1,18 @@
-import type { Player } from "./player";
-import type { EarnedCertifications } from "./certification";
+import type { Skills } from "./player";
 
-export type CareerPath = "residential" | "commercial" | "company" | null;
+export interface SaveProfile extends Skills {
+  playerName: string;
 
-export interface SaveProfile {
-  id: string;
-  name: string;
-  player: Player;
-  certifications: EarnedCertifications;
-  completedCourses: string[];
-  careerPath: CareerPath;
-  contractorScore: number;
-  updatedAt: string;
+  xp: number;
+  graduationPoints: number;
+  contractorCredits: number;
+  money: number;
+
+  certifications: string[];
+
+  level: string;
+  careerPath?: string;
+
+  completedLabs: string[];
+  graduated: boolean;
 }

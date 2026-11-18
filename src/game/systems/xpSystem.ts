@@ -1,25 +1,22 @@
-import { clamp } from "@/utils/calculations";
+const LEVELS: [number, string][] = [
+  [0, "Apprentice"],
+  [1000, "Junior Technician"],
+  [3000, "Technician"],
+  [6000, "Senior Technician"],
+  [10000, "Master Technician"],
+];
 
-/** XP needed to reach `level` from level 1 (quadratic curve). */
-export function xpForLevel(level: number): number {
-  const l = Math.max(1, Math.floor(level));
-  return 100 * (l - 1) * (l - 1);
+export function levelTitle(xp: number): string {
+  let title = LEVELS[0][1];
+  for (const [min, name] of LEVELS) if (xp >= min) title = name;
+  return title;
 }
 
-export function levelFromXp(xp: number): number {
-  return Math.floor(Math.sqrt(Math.max(0, xp) / 100)) + 1;
-}
-
-export function addXp(currentXp: number, gained: number): { xp: number; level: number; leveledUp: boolean } {
-  const xp = Math.max(0, currentXp + gained);
-  const level = levelFromXp(xp);
-  return { xp, level, leveledUp: level > levelFromXp(currentXp) };
-}
-
-/** Progress (0-100) toward the next level. */
+/** Progress (0-100) toward the next level title; 100 at max level. */
 export function levelProgress(xp: number): number {
-  const level = levelFromXp(xp);
-  const start = xpForLevel(level);
-  const end = xpForLevel(level + 1);
-  return clamp(Math.round(((xp - start) / (end - start)) * 100), 0, 100);
+  const idx = LEVELS.reduce((acc, [min], i) => (xp >= min ? i : acc), 0);
+  const next = LEVELS[idx + 1];
+  if (!next) return 100;
+  const start = LEVELS[idx][0];
+  return Math.round(((xp - start) / (next[0] - start)) * 100);
 }

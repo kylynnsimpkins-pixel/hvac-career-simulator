@@ -2,9 +2,7 @@ export type CertificationId = "epa608" | "nate" | "osha10" | "osha30";
 
 export interface Certification {
   id: CertificationId;
+  /** Display name, also the value stored in SaveProfile.certifications. */
   name: string;
-  requiredLevel: number;
-  passingScore: number;
+  requiredXp: number;
 }
-
-export type EarnedCertifications = Partial<Record<CertificationId, string>>;
