@@ -1,9 +1,11 @@
 import type { SaveProfile } from "@/types/saveProfile";
+import { DEFAULT_WARDROBE, type Wardrobe } from "@/game/data/wardrobe";
 import { levelTitle } from "./xpSystem";
 
-export function createProfile(playerName: string, avatarColor = "#38bdf8", specialty = "Residential"): SaveProfile {
+export function createProfile(playerName: string, avatarColor = "#38bdf8", specialty = "Residential", wardrobe: Wardrobe = DEFAULT_WARDROBE): SaveProfile {
   return {
     avatarColor,
+    wardrobe: { ...wardrobe },
     seenIntro: false,
     graduationSeen: false,
     epaSections: [],

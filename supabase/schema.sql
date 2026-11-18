@@ -1,3 +1,10 @@
+create table if not exists students (
+  username text primary key,
+  password_hash text not null,
+  salt text not null,
+  created_at timestamptz default now()
+);
+
 create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
   name text not null,

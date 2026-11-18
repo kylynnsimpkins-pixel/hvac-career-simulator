@@ -48,6 +48,10 @@ export function listProfiles(): SaveProfile[] {
   return profiles.sort((a, b) => a.playerName.localeCompare(b.playerName));
 }
 
+export function clearActiveProfile(): void {
+  if (typeof window !== "undefined") localStorage.removeItem(ACTIVE_KEY);
+}
+
 export function getActiveProfileName(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(ACTIVE_KEY);

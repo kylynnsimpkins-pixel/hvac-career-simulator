@@ -3,6 +3,7 @@ import { useGameStore, type Reward } from "@/store/gameStore";
 import { INTRO, type DialogueLine } from "@/game/data/dialogue";
 import { addVignette, dropShadow, hudBar, simsPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, makeCharacterTextures, plumbob } from "./characters";
+import type { Wardrobe } from "@/game/data/wardrobe";
 import { makeCampusTextures } from "./campusArt";
 
 interface Building {
@@ -79,8 +80,7 @@ export class CampusScene extends Phaser.Scene {
       this.add.image(x, y, "tree").setScale(0.5).setDepth(y + 16);
     });
 
-    const color = useGameStore.getState().active?.avatarColor ?? "#38bdf8";
-    this.makePlayerTextures(Phaser.Display.Color.HexStringToColor(color).color);
+    this.makePlayerTextures(useGameStore.getState().active?.wardrobe);
     const from = BUILDINGS.find((b) => b.label === data?.from);
     const spawn = from ? { x: from.x, y: from.y + DOOR_OFFSET + 50 } : { x: 320, y: 430 };
     this.shadow = this.add.ellipse(320, 446, 18, 7, 0x000000, 0.35);
@@ -318,7 +318,7 @@ export class CampusScene extends Phaser.Scene {
     makeCampusTextures(this, BUILDINGS);
   }
 
-  private makePlayerTextures(shirt: number) {
-    makeCharacterTextures(this, shirt);
+  private makePlayerTextures(wardrobe?: Wardrobe) {
+    makeCharacterTextures(this, wardrobe);
   }
 }

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { SaveProfile } from "@/types/saveProfile";
 import type { CertificationId } from "@/types/certification";
 import type { SkillName } from "@/types/player";
+import { TOPS, type Wardrobe } from "@/game/data/wardrobe";
+import { deleteAccount } from "@/game/systems/accountSystem";
 import { createProfile } from "@/game/systems/profileSystem";
 import { levelTitle } from "@/game/systems/xpSystem";
 import { addCertification, canEarn } from "@/game/systems/certificationSystem";
@@ -9,7 +11,7 @@ import { shouldGraduate } from "@/game/systems/graduationSystem";
 import { canBuyTool, canUnlockSkill, isQuestComplete } from "@/game/systems/progressionSystem";
 import { QUESTS, SKILL_TREE, TOOLS } from "@/game/data/gameContent";
 import { pullFromCloud, pushToCloud } from "@/game/systems/cloudSync";
-import { deleteSave, getActiveProfileName, listProfiles, loadGame, saveGame } from "@/game/systems/saveSystem";
+import { clearActiveProfile, deleteSave, getActiveProfileName, listProfiles, loadGame, saveGame } from "@/game/systems/saveSystem";
 
 export interface Reward {
   xp?: number;
@@ -25,7 +27,9 @@ interface GameState {
   active: SaveProfile | null;
   justSaved: boolean;
   init: () => void;
-  newProfile: (name: string, avatarColor?: string, specialty?: string) => void;
+  newProfile: (name: string, avatarColor?: string, specialty?: string, wardrobe?: Wardrobe) => void;
+  setWardrobe: (wardrobe: Wardrobe) => void;
+  logout: () => void;
   buyTool: (id: string) => boolean;
   unlockSkill: (id: string) => boolean;
   claimQuest: (id: string) => boolean;
@@ -76,9 +80,19 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ profiles: listProfiles(), active: name ? loadGame(name) : null });
     },
 
-    newProfile: (name, avatarColor, specialty) => {
+    newProfile: (name, avatarColor, specialty, wardrobe) => {
       const existing = loadGame(name);
-      commit(existing ?? createProfile(name, avatarColor, specialty));
+      commit(existing ?? createProfile(name, avatarColor, specialty, wardrobe));
+    },
+
+    setWardrobe: (wardrobe) => {
+      const a = get().active;
+      if (a) commit({ ...a, wardrobe, avatarColor: "#" + TOPS[wardrobe.top].color.toString(16).padStart(6, "0") });
+    },
+
+    logout: () => {
+      clearActiveProfile();
+      set({ active: null });
     },
 
     buyTool: (id) => {
@@ -128,6 +142,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     removeProfile: (name) => {
       deleteSave(name);
+      deleteAccount(name);
       const active = get().active;
       set({
         profiles: listProfiles(),

@@ -1,4 +1,5 @@
 import type { Skills } from "./player";
+import type { Wardrobe } from "@/game/data/wardrobe";
 
 export interface SaveProfile extends Skills {
   playerName: string;
@@ -24,6 +25,7 @@ export interface SaveProfile extends Skills {
   graduated: boolean;
 
   avatarColor: string;
+  wardrobe: Wardrobe;
   specialty: string;
   inventory: string[];
   skillPoints: number;
