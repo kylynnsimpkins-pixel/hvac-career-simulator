@@ -4,6 +4,8 @@ import { dayProgress, focusFor } from "@/game/data/labGames";
 import { dailyQuiz, isReviewDay, HOMEWORK, LESSON_PLANS, classroomLines, lessonContent, quizGrade, quizReward } from "@/game/data/dialogue";
 import { DialogueBox } from "./DialogueBox";
 import { QuizBox } from "./QuizBox";
+import { MatchGame } from "./MatchGame";
+import { matchRound } from "@/game/data/matchPairs";
 import { floorTexture, lightShafts, wallPanel } from "./fx";
 import { CHAR_BODY, CHAR_SCALE, plumbob } from "./characters";
 import { addVignette, hudBar } from "./fx";
@@ -22,6 +24,7 @@ export class ClassroomScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private dialogue!: DialogueBox;
   private quiz!: QuizBox;
+  private match!: MatchGame;
   private toast!: Phaser.GameObjects.Text;
   private marker!: Phaser.GameObjects.Text;
   private target: Phaser.Math.Vector2 | null = null;
@@ -79,6 +82,7 @@ export class ClassroomScene extends Phaser.Scene {
 
     this.dialogue = new DialogueBox(this);
     this.quiz = new QuizBox(this);
+    this.match = new MatchGame(this);
     this.toast = this.add
       .text(320, 350, "", { fontFamily: FONT, fontSize: "14px", color: "#fde047", backgroundColor: "#000000cc", padding: { x: 8, y: 4 } })
       .setOrigin(0.5)
@@ -89,7 +93,7 @@ export class ClassroomScene extends Phaser.Scene {
     this.input.keyboard!.on("keydown-SPACE", () => this.dialogue.advance());
     this.input.keyboard!.on("keydown-ENTER", () => this.dialogue.advance());
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (this.quiz.active) return;
+      if (this.quiz.active || this.match.active) return;
       if (this.dialogue.active) this.dialogue.advance();
       else this.target = new Phaser.Math.Vector2(p.worldX, p.worldY);
     });
@@ -99,7 +103,7 @@ export class ClassroomScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0);
 
-    if (this.dialogue.active || this.quiz.active) {
+    if (this.dialogue.active || this.quiz.active || this.match.active) {
       this.target = null;
       this.player.setTexture("player-0");
       return;
@@ -162,7 +166,11 @@ export class ClassroomScene extends Phaser.Scene {
     this.dialogue.start(classroomLines(playerName, lessonDay), () => {
       const quiz = dailyQuiz(lessonDay);
       this.quiz.start(quiz, (correct) => {
+       this.match.start(matchRound(lessonDay), (misses) => {
         const reward = quizReward(correct, quiz.length);
+        const bonus = Math.max(0, 6 - misses);
+        reward.xp += bonus * 3;
+        reward.graduationPoints += Math.floor(bonus / 3);
         const s = useGameStore.getState();
         s.reward(reward);
         s.patch({ lessonDay: lessonDay + 1 });
@@ -171,10 +179,12 @@ export class ClassroomScene extends Phaser.Scene {
         this.dialogue.start(
           [
             { speaker: "Mr. Simpkins", text: `${isReviewDay(lessonDay) ? "Weekly review: y" : "Y"}ou got ${correct} of ${quiz.length} correct. ${quizGrade(correct, quiz.length)}` },
+            { speaker: "Mr. Simpkins", text: `Matching game: ${misses} wrong guess${misses === 1 ? "" : "es"}.` },
             { speaker: "Mr. Simpkins", text: `Today you earn +${reward.xp} XP and +${reward.graduationPoints} Graduation points.` },
           ],
           () => this.showToast(`Class complete: +${reward.xp} XP, +${reward.graduationPoints} Graduation`),
         );
+       });
       });
     });
   }
