@@ -1,12 +1,14 @@
 import * as Phaser from "phaser";
 import { CRIB_ITEMS } from "@/game/data/labGames";
 import type { Scenario } from "@/game/data/scenarios";
+import { iconKey } from "./icons";
 
 const FONT = "monospace";
 const BTN = "#24304f";
 const LOOK = "Look (inspect)";
 
 type Btn = Phaser.GameObjects.Text;
+type Tile = Phaser.GameObjects.Container & { setBackgroundColor(color: string): void };
 
 /** Interactive diagnosis: pick a tool or part from the belt, then use it on a piece of the broken equipment. */
 export class DiagnoseGame {
@@ -15,8 +17,8 @@ export class DiagnoseGame {
   private symptom: Phaser.GameObjects.Text;
   private readout: Phaser.GameObjects.Text;
   private dyn: Phaser.GameObjects.GameObject[] = [];
-  private beltBtns = new Map<string, Btn>();
-  private compBtns = new Map<string, Btn>();
+  private beltBtns = new Map<string, Tile>();
+  private compBtns = new Map<string, Tile>();
   private choiceBtns: Btn[] = [];
   private running = false;
   private solved = false;
@@ -55,6 +57,25 @@ export class DiagnoseGame {
     return t;
   }
 
+  private tile(x: number, y: number, w: number, h: number, name: string, size: number, onClick: () => void): Tile {
+    const bg = this.scene.add.rectangle(0, 0, w, h, 0x24304f).setOrigin(0, 0);
+    const pic = h - 4;
+    const img = this.scene.add.image(2 + pic / 2, h / 2, iconKey(this.scene, name)).setDisplaySize(pic, pic);
+    const label = this.scene.add
+      .text(pic + 8, h / 2, name, { fontFamily: FONT, fontSize: `${size}px`, color: "#e6ecff", wordWrap: { width: w - pic - 12 } })
+      .setOrigin(0, 0.5);
+    const t = Object.assign(this.scene.add.container(x, y, [bg, img, label]), {
+      setBackgroundColor: (c: string) => void bg.setFillStyle(parseInt(c.slice(1), 16)),
+    });
+    t.setSize(w, h);
+    t.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
+    if (t.input) t.input.cursor = "pointer";
+    t.on("pointerdown", onClick);
+    this.box.add(t);
+    this.dyn.push(t);
+    return t;
+  }
+
   start(sc: Scenario, belt: string[], onDone: (mistakes: number) => void) {
     this.close();
     this.sc = sc;
@@ -71,8 +92,8 @@ export class DiagnoseGame {
     this.box.setVisible(true);
 
     [LOOK, ...belt].forEach((name, i) => {
-      const home = { x: 450, y: 168 + i * 23 };
-      const b = this.button(home.x, home.y, 160, name, 11, 3, () => this.select(name));
+      const home = { x: 450, y: 168 + i * 28 };
+      const b = this.tile(home.x, home.y, 160, 26, name, 11, () => this.select(name));
       this.beltBtns.set(name, b);
       this.scene.input.setDraggable(b);
       b.on("dragstart", () => {
@@ -80,7 +101,7 @@ export class DiagnoseGame {
         this.box.bringToTop(b);
       });
       b.on("drag", (p: Phaser.Input.Pointer) => {
-        b.setPosition(p.worldX - 80, p.worldY - 9);
+        b.setPosition(p.worldX - 80, p.worldY - 13);
         const over = this.compAt(p.worldX, p.worldY);
         this.compBtns.forEach((cb, cid) => cb.setBackgroundColor(cid === over ? "#b7791f" : this.tested.has(cid) ? "#2c5282" : BTN));
       });
@@ -94,7 +115,7 @@ export class DiagnoseGame {
     this.select(LOOK);
 
     sc.comps.forEach((c, i) => {
-      const b = this.button(40 + (i % 2) * 205, 190 + Math.floor(i / 2) * 48, 195, c.name, 12, 12, () => this.use(c.id));
+      const b = this.tile(40 + (i % 2) * 205, 190 + Math.floor(i / 2) * 48, 195, 44, c.name, 12, () => this.use(c.id));
       this.compBtns.set(c.id, b);
     });
   }
@@ -168,6 +189,7 @@ export class DiagnoseGame {
   private solve(name: string, lucky: boolean) {
     const sc = this.sc!;
     this.solved = true;
+    this.compBtns.forEach((c) => c.setVisible(false));
     this.readout.setText(`Placed: ${sc.fix} on the ${name}.${lucky ? " (A lucky guess: measure or inspect first next time.)" : ""}`);
     const quiz = sc.quiz;
     this.symptom.setText(`Question: ${quiz.q}`);
