@@ -120,7 +120,7 @@ export class ArrivalScene extends Phaser.Scene {
         { who: "You", text: "Let me take a look at the system. I'll have a few questions for you first." },
         { who: name, text: "Of course, come right in." },
       ];
-      this.run(() => this.walk(DOOR_X, 500, () => this.cameras.main.fadeOut(350, 0, 0, 0, (_c: unknown, p: number) => p === 1 && this.scene.start("JobsiteScene", { site: this.site, level: 0 }))));
+      this.run(() => this.walk(DOOR_X, 500, () => this.cameras.main.fadeOut(350, 0, 0, 0, (_c: unknown, p: number) => p === 1 && this.scene.start("JobsiteScene", { site: this.site.id, level: 0 }))));
     } else {
       this.lines = [
         { who: "You", text: `Hi, I'm here for the service call at ${a.street}.` },
