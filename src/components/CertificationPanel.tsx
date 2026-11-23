@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CERTIFICATIONS, examRequirements } from "@/game/systems/certificationSystem";
 import type { SaveProfile } from "@/types/saveProfile";
@@ -12,7 +12,7 @@ export default function CertificationPanel({ profile }: { profile: SaveProfile }
         return (
           <li key={c.id} className="rounded border border-slate-600 p-3 text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/icons/${c.id}.png`} alt={c.name} className={`mx-auto h-12 w-12 ${has ? "" : "opacity-40"}`} />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/icons/${c.id}.png`} alt={c.name} className={`mx-auto h-12 w-12 ${has ? "" : "opacity-40"}`} />
             <p className="mt-2 text-sm font-semibold">{c.name}</p>
             {has ? (
               <p className="text-green-400">Earned</p>
