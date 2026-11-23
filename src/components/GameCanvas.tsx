@@ -1,9 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function GameCanvas() {
   const ref = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
+
+  const setMode = useCallback((on: boolean) => {
+    setFull(on);
+    const doc = document as Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => void };
+    const root = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
+    try {
+      if (on) {
+        void (root.requestFullscreen?.() ?? root.webkitRequestFullscreen?.())?.catch?.(() => {});
+        void (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock?.("landscape")?.catch(() => {});
+      } else if (document.fullscreenElement || doc.webkitFullscreenElement) {
+        void (document.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+      }
+    } catch {
+      /* the CSS fullscreen layout still works where the API is blocked */
+    }
+  }, []);
+
+  useEffect(() => {
+    // Phones and tablets start in fullscreen; the exit button gives access to the rest of the game.
+    if (window.matchMedia("(pointer: coarse) and (max-width: 1024px)").matches) setFull(true);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = full ? "hidden" : "";
+    const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 60);
+    return () => window.clearTimeout(t);
+  }, [full]);
+
+  useEffect(() => {
+    const onFs = () => {
+      if (!document.fullscreenElement) setFull(false);
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
 
   useEffect(() => {
     let game: import("phaser").Game | undefined;
@@ -59,5 +95,17 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <div ref={ref} className="mx-auto w-full max-w-[640px]" />;
+  return (
+    <div className={full ? "fixed inset-0 z-50 flex items-center justify-center bg-black" : "relative mx-auto w-full max-w-[640px]"}>
+      <div ref={ref} className={full ? "h-full w-full" : "w-full"} />
+      <button
+        type="button"
+        onClick={() => setMode(!full)}
+        aria-label={full ? "Exit full screen" : "Enter full screen"}
+        className={`absolute right-2 top-2 z-10 rounded bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
+      >
+        {full ? "✕ Exit full screen" : "⛶ Full screen"}
+      </button>
+    </div>
+  );
 }
