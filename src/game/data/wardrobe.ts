@@ -39,6 +39,12 @@ export const HAIR: { name: string; style: HairStyle; color: number }[] = [
   { name: "Mohawk", style: "mohawk", color: 0x2a6fd6 },
   { name: "Dreads", style: "dreads", color: 0x2a1a10 },
   { name: "Bald", style: "bald", color: 0x000000 },
+  { name: "Blond side part", style: "side", color: 0xe5c07b },
+  { name: "Red crop", style: "crop", color: 0xb5451b },
+  { name: "Grey curly", style: "curly", color: 0x9ca3af },
+  { name: "Blond ponytail", style: "ponytail", color: 0xe5c07b },
+  { name: "Pink mohawk", style: "mohawk", color: 0xec4899 },
+  { name: "Brown dreads", style: "dreads", color: 0x5b3a1e },
 ];
 
 export const HATS: { name: string; style: HatStyle; color: number }[] = [
@@ -52,6 +58,10 @@ export const HATS: { name: string; style: HatStyle; color: number }[] = [
   { name: "Black beanie", style: "beanie", color: 0x1f2937 },
   { name: "Grey beanie", style: "beanie", color: 0x9ca3af },
   { name: "No hat", style: "none", color: 0 },
+  { name: "Black cap", style: "cap", color: 0x111827 },
+  { name: "Orange beanie", style: "beanie", color: 0xf97316 },
+  { name: "Pink hard hat", style: "hardhat", color: 0xec4899 },
+  { name: "Green hard hat", style: "hardhat", color: 0x16a34a },
 ];
 
 export const TOPS = [
@@ -65,6 +75,12 @@ export const TOPS = [
   { name: "Yellow coveralls", color: 0xe0a800 },
   { name: "Purple polo", color: 0x7e3fb8 },
   { name: "Denim shirt", color: 0x4a6fa5 },
+  { name: "Teal polo", color: 0x0f9b8e },
+  { name: "Maroon hoodie", color: 0x7f1d1d },
+  { name: "Pink tee", color: 0xf472b6 },
+  { name: "Lime hi-vis", color: 0xa3e635 },
+  { name: "Brown work jacket", color: 0x7a5230 },
+  { name: "Sky blue shirt", color: 0x60a5fa },
 ];
 
 export const PANTS = [
@@ -78,6 +94,12 @@ export const PANTS = [
   { name: "Grey slacks", color: 0x9ca3af },
   { name: "Dark denim", color: 0x1e2a44 },
   { name: "Tan carpenter", color: 0xc9a66b },
+  { name: "Black jeans", color: 0x111827 },
+  { name: "Maroon slacks", color: 0x6b2737 },
+  { name: "Light denim", color: 0x7da0cf },
+  { name: "Forest cargo", color: 0x2f4a2f },
+  { name: "White painter pants", color: 0xe5e7eb },
+  { name: "Purple joggers", color: 0x5b21b6 },
 ];
 
 export const SHOES = [
@@ -91,6 +113,12 @@ export const SHOES = [
   { name: "Grey trainers", color: 0x9ca3af },
   { name: "Steel toes", color: 0x3f3f46 },
   { name: "Green boots", color: 0x365314 },
+  { name: "Yellow boots", color: 0xe0a800 },
+  { name: "Pink sneakers", color: 0xf472b6 },
+  { name: "Orange sneakers", color: 0xf97316 },
+  { name: "White boots", color: 0xe5e7eb },
+  { name: "Maroon boots", color: 0x7f1d1d },
+  { name: "Purple sneakers", color: 0x7e3fb8 },
 ];
 
 export const HAIR_GIRL: { name: string; style: HairStyle; color: number }[] = [
@@ -104,6 +132,12 @@ export const HAIR_GIRL: { name: string; style: HairStyle; color: number }[] = [
   { name: "Curly top", style: "curly", color: 0x1f1510 },
   { name: "Afro puffs", style: "afro", color: 0x15100c },
   { name: "Side sweep", style: "sidesweep", color: 0xe5c07b },
+  { name: "Black bob", style: "bob", color: 0x15100c },
+  { name: "Auburn pigtails", style: "pigtails", color: 0x9a3412 },
+  { name: "Blond bun", style: "bun", color: 0xe5c07b },
+  { name: "Pink pixie", style: "pixie", color: 0xec4899 },
+  { name: "Blue long hair", style: "long", color: 0x2a6fd6 },
+  { name: "Red side braid", style: "braid", color: 0xb5451b },
 ];
 
 export const hairFor = (g?: Gender) => (g === "girl" ? HAIR_GIRL : HAIR);

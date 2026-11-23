@@ -103,7 +103,7 @@ export class JobsiteScene extends Phaser.Scene {
       const cx = Math.min(600, u.x + 75);
       const cy = Math.min(440, u.y + 55);
       this.add.ellipse(cx, cy - 2, 18, 7, 0x000000, 0.35).setDepth(cy - 1);
-      this.add.image(cx, cy, "customer").setOrigin(0.5, 1).setScale(CHAR_SCALE).setDepth(cy);
+      this.add.image(cx, cy, `owner-${this.site.id}`).setOrigin(0.5, 1).setScale(CHAR_SCALE).setDepth(cy);
       this.add.text(cx, cy - 32, this.site.kind === "Residential" ? "Homeowner" : "Owner", { fontFamily: FONT, fontSize: "10px", color: "#ffffff", backgroundColor: "#000000aa", padding: { x: 3, y: 1 } }).setOrigin(0.5).setDepth(9000);
     }
 

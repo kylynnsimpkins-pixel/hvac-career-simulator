@@ -58,7 +58,7 @@ export class ArrivalScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(9000);
 
-    this.add.image(DOOR_X, 336, "customer").setOrigin(0.5, 1).setScale(0.9).setDepth(340).setName("owner");
+    this.add.image(DOOR_X, 336, `owner-${site.id}`).setOrigin(0.5, 1).setScale(0.9).setDepth(340).setName("owner");
 
     this.van = this.add.image(-90, 392, "van").setScale(0.5).setOrigin(0.5, 1).setDepth(392);
     this.tech = this.add.image(250, 392, "player-0").setOrigin(0.5, 1).setScale(0.9).setDepth(392).setVisible(false);

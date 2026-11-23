@@ -1,12 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Link from "next/link";
 import HUD from "@/components/HUD";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "HVAC Career Simulator",
-  description: "Train, certify, and build an HVAC career.",
+  metadataBase: new URL(siteUrl),
+  title: { default: "HVAC Career Simulator", template: "%s | HVAC Career Simulator" },
+  description: "Train, certify, and build an HVAC career in a game-based simulator: classes, labs, EPA 608 prep and real service calls.",
+  applicationName: "HVAC Career Simulator",
+  openGraph: { title: "HVAC Career Simulator", description: "Go from HVAC student to certified technician and contractor.", type: "website", siteName: "HVAC Career Simulator" },
 };
+
+export const viewport: Viewport = { themeColor: "#1e3a8a", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
