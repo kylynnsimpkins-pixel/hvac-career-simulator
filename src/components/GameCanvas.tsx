@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { music, trackFor } from "@/game/audio/music";
 
-export default function GameCanvas() {
+export default function GameCanvas({ start }: { start?: string } = {}) {
   const ref = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -69,6 +69,7 @@ export default function GameCanvas() {
       const { JobsiteScene } = await import("@/game/scenes/JobsiteScene");
       const { GraduationScene } = await import("@/game/scenes/GraduationScene");
       const { ExamScene } = await import("@/game/scenes/ExamScene");
+      const { EndingScene } = await import("@/game/scenes/EndingScene");
       if (cancelled || !ref.current) return;
       // Render at 2x for crisp, smooth art; scenes still lay out in 640x480 world units.
       const factory = Phaser.GameObjects.GameObjectFactory.prototype as unknown as { text: (...a: unknown[]) => Phaser.GameObjects.Text; __hires?: boolean };
@@ -88,7 +89,7 @@ export default function GameCanvas() {
         height: 960,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-        scene: [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene],
+        scene: start === "EndingScene" ? [EndingScene, CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene] : [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene, EndingScene],
       });
       game.events.once("ready", () => {
         const frame = (s: Phaser.Scene) => {

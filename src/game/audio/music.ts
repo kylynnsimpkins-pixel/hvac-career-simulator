@@ -45,6 +45,8 @@ export const TRACKS: Record<string, Track> = {
     lead: [0, _, _, 2, 4, _, 6, _, 4, _, 2, _, _, 3, _, _], bass: [0, _, _, 0, _, _, 4, _, 0, _, _, 0, _, _, 3, _] },
   graduation: { bpm: 120, root: 60, scale: MAJOR, prog: [0, 4, 5, 3], wave: "triangle", bassWave: "triangle", drums: "beat",
     lead: [0, _, 2, _, 4, _, 7, _, 7, _, 5, _, 4, 2, 4, _], bass: [0, _, _, 0, 4, _, _, 4, 5, _, _, 5, 3, _, 4, _] },
+  ending: { bpm: 92, root: 60, scale: MAJOR, prog: [0, 5, 3, 4], wave: "triangle", bassWave: "sine", drums: "soft",
+    lead: [4, _, _, 4, 5, _, 7, _, 9, _, 7, _, 5, _, 4, _], bass: [0, _, _, _, 0, _, 4, _, 0, _, _, _, 4, _, _, _] },
   exam: { bpm: 80, root: 57, scale: MINOR, prog: [0, 5, 3, 4], wave: "sine", bassWave: "sine", drums: "none", level: 0.8,
     lead: [0, _, _, _, 2, _, _, _, 4, _, _, _, 2, _, _, _], bass: [0, _, _, _, _, _, _, _, 0, _, _, _, _, _, _, _] },
 };
@@ -61,6 +63,7 @@ export function trackFor(sceneKey: string, siteId?: string): string | null {
     case "JobsiteScene": return siteId && TRACKS[siteId] ? siteId : "map";
     case "GraduationScene": return "graduation";
     case "ExamScene": return "exam";
+    case "EndingScene": return "ending";
     default: return null;
   }
 }

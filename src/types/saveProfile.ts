@@ -35,4 +35,6 @@ export interface SaveProfile extends Skills {
   skillPoints: number;
   unlockedSkills: string[];
   completedQuests: string[];
+  /** Set once the player has seen the company ending. */
+  companyOpened?: boolean;
 }

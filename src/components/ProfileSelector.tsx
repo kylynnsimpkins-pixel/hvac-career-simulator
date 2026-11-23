@@ -22,6 +22,7 @@ export default function ProfileSelector() {
 
   useEffect(() => {
     init();
+    setUsername(localStorage.getItem("hvac-last-username") ?? "");
   }, [init]);
 
   const submit = async (e: React.FormEvent) => {
@@ -31,6 +32,7 @@ export default function ProfileSelector() {
       if (password !== confirm) return setMsg("Passwords do not match");
       const res = await registerAccount(username, password);
       if (!res.ok) return setMsg(res.error ?? "Could not create account");
+      localStorage.setItem("hvac-last-username", username.trim());
       newProfile(username, "#" + TOPS[wardrobe.top].color.toString(16).padStart(6, "0"), specialty, wardrobe);
       setPassword("");
       setConfirm("");
@@ -39,6 +41,7 @@ export default function ProfileSelector() {
     if (!hasAccount(username)) return setMsg("No account with that username. Create one first.");
     if (!(await verifyLogin(username, password))) return setMsg("Wrong username or password");
     selectProfile(username);
+    localStorage.setItem("hvac-last-username", username.trim());
     setPassword("");
     setMsg("Logged in.");
   };

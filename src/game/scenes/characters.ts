@@ -22,6 +22,13 @@ export const OWNER_LOOKS: Record<string, Look> = {
   restaurant: { shirt: 0xf5f5f5, pants: 0x374151, skin: 0xc68642, hair: 0x2a1a10, hairStyle: "bun", shoes: 0x1f2937, female: true, hatStyle: "cap", hat: 0xf5f5f5 },
 };
 
+/** Company employees seen at the end of the game. */
+export const WORKER_LOOKS: Look[] = [
+  { shirt: 0x1e3a8a, pants: 0x1f2937, skin: 0xd9a066, hair: 0x2a1a10, hairStyle: "crop", hatStyle: "hardhat", hat: 0xffd400, shoes: 0x5b3a1e, belt: true },
+  { shirt: 0x1e3a8a, pants: 0x1f2937, skin: 0x8d5524, hair: 0x15100c, hairStyle: "ponytail", hatStyle: "cap", hat: 0x1e3a8a, shoes: 0x111827, belt: true, female: true },
+  { shirt: 0x1e3a8a, pants: 0x374151, skin: 0xf1c27d, hair: 0xb5451b, hairStyle: "buzz", hatStyle: "hardhat", hat: 0xf5f5f5, shoes: 0x5b3a1e, belt: true },
+];
+
 /** Builds the shared player and teacher textures used by every scene. */
 export function makeCharacterTextures(scene: Phaser.Scene, wardrobe: Wardrobe = DEFAULT_WARDROBE) {
   const player: Look = buildLook(wardrobe);
@@ -29,6 +36,7 @@ export function makeCharacterTextures(scene: Phaser.Scene, wardrobe: Wardrobe = 
   paint(scene, "player-1", player, 1);
   paint(scene, "teacher", { shirt: 0xf5f5f5, pants: 0x3a3a3a, skin: 0x8d5524, hair: 0x2a1a10, dreads: true, shoes: 0x2b1d14, tie: 0xb02a2a, glasses: true }, 0);
   paint(scene, "customer", { shirt: 0x6b8fd6, pants: 0x4b5563, skin: 0xe0ac8a, hair: 0x6b4a2b, hairStyle: "side", shoes: 0x3b2a1a }, 0);
+  WORKER_LOOKS.forEach((look, i) => paint(scene, `worker-${i}`, look, 0));
   for (const [id, look] of Object.entries(OWNER_LOOKS)) paint(scene, `owner-${id}`, look, 0);
   paint(scene, "technician-npc", { shirt: 0x2f855a, pants: 0x374151, skin: 0xd9a066, hat: 0xf97316, belt: true }, 0);
 }
