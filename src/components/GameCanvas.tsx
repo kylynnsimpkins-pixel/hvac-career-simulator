@@ -1,10 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { music, trackFor } from "@/game/audio/music";
 
 export default function GameCanvas() {
   const ref = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    setMuted(music.isMuted);
+    const unlock = () => music.unlock();
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
 
   const setMode = useCallback((on: boolean) => {
     setFull(on);
@@ -82,15 +95,26 @@ export default function GameCanvas() {
           s.cameras.main.setZoom(2).centerOn(320, 240);
           s.physics?.world.setBounds(0, 0, 640, 480);
         };
+        const tune = (s: Phaser.Scene) => {
+          const site = (s as unknown as { site?: { id: string } }).site;
+          music.play(trackFor(s.sys.settings.key, site?.id));
+        };
         game!.scene.scenes.forEach((s) => {
-          s.sys.events.on(Phaser.Scenes.Events.CREATE, () => frame(s));
-          if (s.sys.isActive()) frame(s);
+          s.sys.events.on(Phaser.Scenes.Events.CREATE, () => {
+            frame(s);
+            tune(s);
+          });
+          if (s.sys.isActive()) {
+            frame(s);
+            tune(s);
+          }
         });
       });
     })();
 
     return () => {
       cancelled = true;
+      music.stop();
       game?.destroy(true);
     };
   }, []);
@@ -98,6 +122,18 @@ export default function GameCanvas() {
   return (
     <div className={full ? "fixed inset-0 z-50 flex items-center justify-center bg-black" : "relative mx-auto w-full max-w-[640px]"}>
       <div ref={ref} className={full ? "h-full w-full" : "w-full"} />
+      <button
+        type="button"
+        onClick={() => {
+          music.unlock();
+          music.setMuted(!muted);
+          setMuted(!muted);
+        }}
+        aria-label={muted ? "Turn music on" : "Turn music off"}
+        className={`absolute left-2 top-2 z-10 rounded bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
+      >
+        {muted ? "🔇 Music off" : "🎵 Music on"}
+      </button>
       <button
         type="button"
         onClick={() => setMode(!full)}
