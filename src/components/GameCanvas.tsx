@@ -73,11 +73,31 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
       if (cancelled || !ref.current) return;
       // Render at 2x for crisp, smooth art; scenes still lay out in 640x480 world units.
       const factory = Phaser.GameObjects.GameObjectFactory.prototype as unknown as { text: (...a: unknown[]) => Phaser.GameObjects.Text; __hires?: boolean };
+      const coarse = window.matchMedia("(pointer: coarse)").matches;
       if (!factory.__hires) {
         const orig = factory.text;
         factory.text = function (this: unknown, ...args: unknown[]) {
+          const style = args[3] as { fontSize?: string | number } | undefined;
+          if (coarse && style && style.fontSize !== undefined) {
+            // Phones: bump small text up to a readable minimum.
+            const px = parseFloat(String(style.fontSize));
+            if (px > 0 && px < 12) args[3] = { ...style, fontSize: `${Math.round(px * 1.35 * 10) / 10}px` };
+          }
           return orig.apply(this, args).setResolution(2);
         };
+        if (coarse) {
+          // Phones: make every interactive text a bigger tap target.
+          const T = Phaser.GameObjects.Text.prototype as unknown as { setInteractive: (...a: unknown[]) => unknown };
+          const origSI = T.setInteractive;
+          T.setInteractive = function (this: Phaser.GameObjects.Text, ...a: unknown[]) {
+            if (a.length === 0 || (a.length === 1 && typeof a[0] === "object" && a[0] !== null && !("hitArea" in (a[0] as object)) && !(a[0] instanceof Phaser.Geom.Rectangle) && "useHandCursor" in (a[0] as object))) {
+              const pad = 12;
+              const cfg = (a[0] as object) ?? {};
+              return origSI.call(this, { ...cfg, hitArea: new Phaser.Geom.Rectangle(-pad, -pad, this.width + pad * 2, this.height + pad * 2), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
+            }
+            return origSI.apply(this, a);
+          };
+        }
         factory.__hires = true;
       }
       game = new Phaser.Game({
@@ -89,6 +109,8 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
         height: 960,
         physics: { default: "arcade" },
         scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+        input: { activePointers: 1, touch: { capture: true } },
+        disableContextMenu: true,
         scene: start === "EndingScene" ? [EndingScene, CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene] : [CampusScene, ClassroomScene, LabScene, DriveHomeScene, JobMapScene, ArrivalScene, JobsiteScene, GraduationScene, ExamScene, EndingScene],
       });
       game.events.once("ready", () => {
@@ -122,7 +144,7 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
 
   return (
     <div className={full ? "fixed inset-0 z-50 flex items-center justify-center bg-black" : "relative mx-auto w-full max-w-[640px]"}>
-      <div ref={ref} className={full ? "h-full w-full" : "w-full"} />
+      <div ref={ref} style={{ touchAction: "none" }} className={full ? "h-full w-full" : "w-full"} />
       <button
         type="button"
         onClick={() => {
@@ -131,7 +153,7 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
           setMuted(!muted);
         }}
         aria-label={muted ? "Turn music on" : "Turn music off"}
-        className={`absolute left-2 top-2 z-10 rounded bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
+        className={`absolute left-2 top-2 z-10 rounded bg-black/60 px-4 py-2 text-sm font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
       >
         {muted ? "🔇 Music off" : "🎵 Music on"}
       </button>
@@ -139,7 +161,7 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
         type="button"
         onClick={() => setMode(!full)}
         aria-label={full ? "Exit full screen" : "Enter full screen"}
-        className={`absolute right-2 top-2 z-10 rounded bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
+        className={`absolute right-2 top-2 z-10 rounded bg-black/60 px-4 py-2 text-sm font-bold text-white backdrop-blur hover:bg-black/80 ${full ? "pt-[max(0.375rem,env(safe-area-inset-top))]" : ""}`}
       >
         {full ? "✕ Exit full screen" : "⛶ Full screen"}
       </button>
