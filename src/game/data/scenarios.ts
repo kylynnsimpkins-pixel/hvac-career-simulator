@@ -1,4 +1,5 @@
 import type { StationKind } from "./labLayouts";
+import { VARIANTS } from "./scenarioVariants";
 
 export interface Comp {
   id: string;
@@ -216,6 +217,14 @@ const QUESTIONS: Partial<Record<StationKind, Quiz>> = {
   recovery: { q: "What must you do with refrigerant before opening a charged system?", choices: ["Recover it into a cylinder", "Vent it outside", "Leave it and cut the line"], answer: 0 },
 };
 
-export const SCENARIOS: Partial<Record<StationKind, () => Scenario>> = Object.fromEntries(
-  (Object.keys(BASE) as StationKind[]).map((k) => [k, () => ({ ...BASE[k]!(), quiz: QUESTIONS[k]! })]),
+/** `variant` picks one of the cases for this station type; each has its own quiz question. */
+export const SCENARIOS: Partial<Record<StationKind, (variant?: number) => Scenario>> = Object.fromEntries(
+  (Object.keys(BASE) as StationKind[]).map((k) => [
+    k,
+    (variant = 0) => {
+      const extra = VARIANTS[k] ?? [];
+      const i = Math.abs(variant) % (extra.length + 1);
+      return i === 0 ? { ...BASE[k]!(), quiz: QUESTIONS[k]! } : extra[i - 1]();
+    },
+  ]),
 );

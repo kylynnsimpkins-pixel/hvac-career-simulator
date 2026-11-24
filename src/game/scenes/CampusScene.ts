@@ -29,7 +29,7 @@ const TREES: [number, number][] = [
 ];
 
 const SPEED = 170;
-const DOOR_OFFSET = 62;
+const DOOR_OFFSET = 40;
 const FONT = "monospace";
 
 
@@ -54,6 +54,9 @@ export class CampusScene extends Phaser.Scene {
   }
 
   create(data?: { from?: string }) {
+    this.target = null;
+    this.dialogue = null;
+    this.typing = null;
     this.makeTextures();
     this.drawGround();
 
@@ -62,7 +65,7 @@ export class CampusScene extends Phaser.Scene {
       dropShadow(this, b.x + 8, b.y + 54, 150, 26, b.y + 30);
       const img = this.add.image(b.x, b.y, `bld-${b.label}`).setScale(0.5).setDepth(b.y + 48);
       // Solid body covers the building but leaves the door row walkable.
-      const wall = this.add.zone(b.x, b.y - 8, 124, 76);
+      const wall = this.add.zone(b.x, b.y - 10, 124, 52);
       this.physics.add.existing(wall, true);
       walls.add(wall);
 
@@ -70,7 +73,7 @@ export class CampusScene extends Phaser.Scene {
       this.add.rectangle(b.x, b.y - 62, signW, 16, 0x5b3a1e).setStrokeStyle(2, 0x2e1c0b).setDepth(9000);
       this.add.text(b.x, b.y - 62, b.label, { fontFamily: FONT, fontSize: "11px", color: "#fff3c4" }).setOrigin(0.5).setDepth(9001);
 
-      const marker = this.add.text(b.x, b.y + DOOR_OFFSET - 26, "▼", { fontFamily: FONT, fontSize: "14px", color: "#fde047" }).setOrigin(0.5).setDepth(9000);
+      const marker = this.add.text(b.x, b.y + DOOR_OFFSET - 6, "▼", { fontFamily: FONT, fontSize: "14px", color: "#fde047" }).setOrigin(0.5).setDepth(9000);
       this.tweens.add({ targets: marker, y: marker.y + 6, duration: 500, yoyo: true, repeat: -1 });
       img.setData("b", b.label);
     });
@@ -82,7 +85,7 @@ export class CampusScene extends Phaser.Scene {
 
     this.makePlayerTextures(useGameStore.getState().active?.wardrobe);
     const from = BUILDINGS.find((b) => b.label === data?.from);
-    const spawn = from ? { x: from.x, y: from.y + DOOR_OFFSET + 50 } : { x: 320, y: 430 };
+    const spawn = from ? { x: from.x, y: from.y + DOOR_OFFSET + 70 } : { x: 320, y: 430 };
     this.shadow = this.add.ellipse(320, 446, 18, 7, 0x000000, 0.35);
     this.player = this.physics.add.sprite(spawn.x, spawn.y, "player-0").setOrigin(0.5, 1).setScale(CHAR_SCALE);
     this.player.setCollideWorldBounds(true);

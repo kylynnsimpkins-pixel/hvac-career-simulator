@@ -61,6 +61,8 @@ export class LabScene extends Phaser.Scene {
       block(s.x, s.y, s.w, BENCH_H);
     });
 
+    block(131, 478, 262, 12);
+    block(509, 478, 270, 12);
     this.add.image(420, 300, "teacher").setScale(CHAR_SCALE).setOrigin(0.5, 1).setDepth(300);
     dropShadow(this, 420, 298, 26, 8, 299);
     block(420, 290, 22, 12);
@@ -143,7 +145,7 @@ export class LabScene extends Phaser.Scene {
         break;
       }
     }
-    if (this.player.y >= 472) this.scene.start("CampusScene", { from: this.label });
+    if (this.player.y >= 472 && Math.abs(this.player.x - 320) < 56) this.scene.start("CampusScene", { from: this.label });
   }
 
   private get overlay() {
@@ -202,10 +204,13 @@ export class LabScene extends Phaser.Scene {
     const fallback = (Object.keys(SCENARIOS) as StationKind[]).filter(ready);
     const pick = pool[0] ?? fallback[Math.floor(Math.random() * fallback.length)] ?? s.kind;
     const second = SCENARIOS[pick] ?? make;
-    this.mini.start(make(), belt, (m1) => {
+    // Seed by lesson and station so every station and every day shows a different case.
+    const idx = this.layout.stations.findIndex((x) => x.id === s.id);
+    const seed = lesson * 7 + idx * 3;
+    this.mini.start(make(seed), belt, (m1) => {
       this.say("Good work. Now a second case on the same equipment line. Keep your tools handy.");
       this.time.delayedCall(1800, () =>
-        this.mini.start(second(), belt, (m2) => this.completeStation(s, lesson, Math.max(1, 3 - Math.ceil((m1 + m2) / 2)))),
+        this.mini.start(second(seed + 1 + (pick === s.kind ? 1 : 0)), belt, (m2) => this.completeStation(s, lesson, Math.max(1, 3 - Math.ceil((m1 + m2) / 2)))),
       );
     });
   }

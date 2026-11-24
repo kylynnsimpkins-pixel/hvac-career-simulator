@@ -55,6 +55,9 @@ export class ClassroomScene extends Phaser.Scene {
       solid.add(z);
     };
 
+    block(131, 478, 262, 12);
+    block(509, 478, 270, 12);
+
     // Teacher and desk.
     this.add.image(320, 184, "teacher").setScale(CHAR_SCALE).setOrigin(0.5, 1).setDepth(166);
     teacherDesk(this, 320, 198);
@@ -136,7 +139,7 @@ export class ClassroomScene extends Phaser.Scene {
       this.lessonDone = false;
     }
     if (!this.lessonDone && Phaser.Math.Distance.Between(this.player.x, this.player.y, 320, 222) < 55) this.startLesson();
-    if (this.player.y >= 472) {
+    if (this.player.y >= 472 && Math.abs(this.player.x - 320) < 56) {
       if (this.classEnded) this.scene.start("DriveHomeScene");
       else this.scene.start("CampusScene", { from: "Classroom" });
     }
