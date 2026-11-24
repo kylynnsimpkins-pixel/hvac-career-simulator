@@ -91,7 +91,7 @@ export default function GameCanvas({ start }: { start?: string } = {}) {
           const origSI = T.setInteractive;
           T.setInteractive = function (this: Phaser.GameObjects.Text, ...a: unknown[]) {
             if (a.length === 0 || (a.length === 1 && typeof a[0] === "object" && a[0] !== null && !("hitArea" in (a[0] as object)) && !(a[0] instanceof Phaser.Geom.Rectangle) && "useHandCursor" in (a[0] as object))) {
-              const pad = 12;
+              const pad = 3;
               const cfg = (a[0] as object) ?? {};
               return origSI.call(this, { ...cfg, hitArea: new Phaser.Geom.Rectangle(-pad, -pad, this.width + pad * 2, this.height + pad * 2), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
             }

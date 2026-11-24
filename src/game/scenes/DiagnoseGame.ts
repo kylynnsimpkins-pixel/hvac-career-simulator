@@ -23,6 +23,7 @@ export class DiagnoseGame {
   private running = false;
   private solved = false;
   private mistakes = 0;
+  private lastUse = 0;
   private selected = LOOK;
   private tested = new Set<string>();
   private notes: string[] = [];
@@ -81,6 +82,7 @@ export class DiagnoseGame {
     this.sc = sc;
     this.onDone = onDone;
     this.mistakes = 0;
+    this.lastUse = 0;
     this.solved = false;
     this.tested = new Set();
     this.notes = [];
@@ -159,18 +161,16 @@ export class DiagnoseGame {
     if (!sc || this.solved) return;
     const comp = sc.comps.find((c) => c.id === id)!;
     const item = this.selected;
+    const now = this.scene.time.now;
+    if (now - this.lastUse < 250) return;
+    this.lastUse = now;
 
     if (item === sc.fix) {
       if (id !== sc.fault) {
         this.wrong(`${item} on the ${comp.name}: that isn't the problem.`, id);
         return;
       }
-      let lucky = false;
-      if (!this.tested.has(id)) {
-        this.mistakes++;
-        lucky = true;
-      }
-      this.solve(comp.name, lucky);
+      this.solve(comp.name, !this.tested.has(id));
       return;
     }
 
@@ -190,15 +190,17 @@ export class DiagnoseGame {
     const sc = this.sc!;
     this.solved = true;
     this.compBtns.forEach((c) => c.setVisible(false));
-    this.readout.setText(`Placed: ${sc.fix} on the ${name}.${lucky ? " (A lucky guess: measure or inspect first next time.)" : ""}`);
+    this.readout.setText(`Placed: ${sc.fix} on the ${name}.${lucky ? " (Tip: measure or inspect first next time.)" : ""}`);
     const quiz = sc.quiz;
     this.symptom.setText(`Question: ${quiz.q}`);
     const choices = quiz.choices.map((text, i) => ({ text, i })).sort(() => Math.random() - 0.5);
+    const wrongPicked = new Set<number>();
     choices.forEach((c, n) => {
       const b = this.button(40, 318 + n * 28, 400, c.text, 11, 5, () => {
         if (c.i === quiz.answer) {
           this.finish(sc.done);
-        } else {
+        } else if (!wrongPicked.has(c.i)) {
+          wrongPicked.add(c.i);
           this.mistakes++;
           this.readout.setText(`Not quite, try again. (mistakes: ${this.mistakes})`);
           b.setBackgroundColor("#c53030");
